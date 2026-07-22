@@ -71,7 +71,32 @@ DEFAULT_SEL_LABEL = {
     "Dropdown": "Selecciona",
     "RadioButtonsGroup": "Selecciona una opción",
     "CheckboxGroup": "Elige una o más",
+    "ChipsSelector": "Elige una o más",
 }
+
+
+def _opt_id_by_title(options, title):
+    for o in options:
+        if o.get("title") == title:
+            return o.get("id")
+    return title
+
+
+def _apply_default(comp, blk, options=None, is_arr=False, is_bool=False):
+    d = blk.get("default")
+    if d is None or d == "":
+        return
+    if is_bool:
+        comp["init-value"] = (d is True or d == "true")
+        return
+    if options is not None:
+        if is_arr:
+            vals = d if isinstance(d, list) else [d]
+            comp["init-value"] = [_opt_id_by_title(options, t) for t in vals]
+        else:
+            comp["init-value"] = _opt_id_by_title(options, d)
+        return
+    comp["init-value"] = d
 
 
 def sanitize(label):
@@ -192,9 +217,15 @@ def describe_input(si, input_idx, blk):
         return {"kind": "date", "question": q, "label": blk.get("label", q), "token": t,
                 "name": f"{t}_{short_hash(si, input_idx, q)}",
                 "pkey": f"screen_{si}_{t}_{input_idx}", "dtype": "string", "blk": blk}
+    if "calendar" in blk:
+        q = blk["calendar"]; t = tok(q); rng = (blk.get("mode") == "range")
+        return {"kind": "calendar", "range": rng, "question": q, "label": blk.get("label", q), "token": t,
+                "name": f"{t}_{short_hash(si, input_idx, q)}",
+                "pkey": f"screen_{si}_{t}_{input_idx}", "dtype": "object" if rng else "string", "blk": blk}
     for sel_key, ctype, is_arr in (("dropdown", "Dropdown", False),
                                    ("radio", "RadioButtonsGroup", False),
-                                   ("checkbox", "CheckboxGroup", True)):
+                                   ("checkbox", "CheckboxGroup", True),
+                                   ("chips", "ChipsSelector", True)):
         if sel_key in blk:
             q = blk[sel_key]; t = tok(q)
             return {"kind": "select", "ctype": ctype, "is_arr": is_arr,
@@ -226,42 +257,68 @@ def plan_all_fields(in_screens):
 def emit_component(d, q_as_sub, children):
     """Agrega el/los componente(s) de un input a `children`. Devuelve (pkey, name, dtype)."""
     k = d["kind"]
-    if k in ("textinput", "textarea", "date"):
+    blk = d["blk"]
+    if k in ("textinput", "textarea", "date", "calendar"):
         if q_as_sub and d["question"] and d["question"] != d["label"]:
             children.append({"type": "TextSubheading", "text": d["question"]})
         if k == "textinput":
             comp = {"type": "TextInput", "input-type": d["input_type"], "label": d["label"],
-                    "name": d["name"], "required": d["blk"].get("required", True)}
-            if d["blk"].get("max-chars"):
-                comp["max-chars"] = d["blk"]["max-chars"]
+                    "name": d["name"], "required": blk.get("required", True)}
+            if blk.get("max-chars"):
+                comp["max-chars"] = blk["max-chars"]
+            if blk.get("min-chars"):
+                comp["min-chars"] = blk["min-chars"]
+            if blk.get("pattern"):
+                comp["pattern"] = blk["pattern"]
+            if blk.get("error"):
+                comp["error-message"] = blk["error"]
         elif k == "textarea":
             comp = {"type": "TextArea", "label": d["label"], "name": d["name"],
-                    "required": d["blk"].get("required", True)}
-        else:  # date
+                    "required": blk.get("required", True)}
+            if blk.get("error"):
+                comp["error-message"] = blk["error"]
+        elif k == "date":
             comp = {"type": "DatePicker", "label": d["label"], "name": d["name"],
-                    "required": d["blk"].get("required", True)}
-            if d["blk"].get("min-date"):
-                comp["min-date"] = d["blk"]["min-date"]
-            if d["blk"].get("max-date"):
-                comp["max-date"] = d["blk"]["max-date"]
-        if d["blk"].get("helper"):
-            comp["helper-text"] = d["blk"]["helper"]
+                    "required": blk.get("required", True)}
+            if blk.get("min-date"):
+                comp["min-date"] = blk["min-date"]
+            if blk.get("max-date"):
+                comp["max-date"] = blk["max-date"]
+        else:  # calendar
+            comp = {"type": "CalendarPicker", "label": d["label"], "name": d["name"],
+                    "required": blk.get("required", True),
+                    "mode": "range" if d["range"] else "single"}
+            if blk.get("title"):
+                comp["title"] = blk["title"]
+            if blk.get("min-date"):
+                comp["min-date"] = blk["min-date"]
+            if blk.get("max-date"):
+                comp["max-date"] = blk["max-date"]
+            if d["range"]:
+                if blk.get("min-days") is not None:
+                    comp["min-days"] = blk["min-days"]
+                if blk.get("max-days") is not None:
+                    comp["max-days"] = blk["max-days"]
+        if blk.get("helper"):
+            comp["helper-text"] = blk["helper"]
+        _apply_default(comp, blk)
         children.append(comp)
 
     elif k == "select":
         if q_as_sub:
             children.append({"type": "TextSubheading", "text": d["question"]})
-            label = d["label"] or DEFAULT_SEL_LABEL[d["ctype"]]
+            label = d["label"] or DEFAULT_SEL_LABEL.get(d["ctype"], "Selecciona")
         else:
             label = d["label"] or d["question"]
-        options = norm_options(d["blk"]["options"])
+        options = norm_options(blk["options"])
         comp = {"type": d["ctype"], "label": label, "name": d["name"],
-                "required": d["blk"].get("required", True), "data-source": options}
-        if d["ctype"] == "CheckboxGroup":
-            if d["blk"].get("min") is not None:
-                comp["min-selected-items"] = d["blk"]["min"]
-            if d["blk"].get("max") is not None:
-                comp["max-selected-items"] = d["blk"]["max"]
+                "required": blk.get("required", True), "data-source": options}
+        if d["ctype"] in ("CheckboxGroup", "ChipsSelector"):
+            if blk.get("min") is not None:
+                comp["min-selected-items"] = blk["min"]
+            if blk.get("max") is not None:
+                comp["max-selected-items"] = blk["max"]
+        _apply_default(comp, blk, options, d["is_arr"])
         children.append(comp)
         d["_options"] = options  # para resolver el id del gate
 
@@ -272,6 +329,7 @@ def emit_component(d, q_as_sub, children):
             comp["on-click-action"] = {"name": "navigate",
                                        "next": {"name": d["blk"]["terms"], "type": "screen"},
                                        "payload": {}}
+        _apply_default(comp, d["blk"], is_bool=True)
         children.append(comp)
 
     return (d["pkey"], d["name"], d["dtype"])
@@ -326,7 +384,7 @@ def build(spec):
             elif pk in carr:
                 payload[pk] = f"${{data.{pk}}}"
             else:
-                payload[pk] = [] if dt == "array" else ""
+                payload[pk] = [] if dt == "array" else ({} if dt == "object" else "")
         return payload
 
     for si, s in enumerate(in_screens):
@@ -417,8 +475,12 @@ def build(spec):
 
         data_decl = {}
         for pk, dt in carried:
-            data_decl[pk] = ({"__example__": [], "items": {"type": "string"}, "type": "array"}
-                             if dt == "array" else {"__example__": "Example", "type": "string"})
+            if dt == "array":
+                data_decl[pk] = {"__example__": [], "items": {"type": "string"}, "type": "array"}
+            elif dt == "object":
+                data_decl[pk] = {"__example__": {"start-date": "2024-01-01", "end-date": "2024-01-05"}, "type": "object"}
+            else:
+                data_decl[pk] = {"__example__": "Example", "type": "string"}
 
         screen_obj = {
             "id": s["id"], "title": s.get("title", ""), "data": data_decl,

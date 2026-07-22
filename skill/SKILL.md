@@ -141,10 +141,13 @@ y acepta `?platform=ios&theme=dark&screen=ID` para abrir en un estado concreto.
         {"passcode": "Código",      "label": "Código de acceso"},
         {"textarea": "Comentarios", "label": "Escribe aquí", "required": false},
 
-        {"dropdown": "¿Ciudad?", "label": "Selecciona", "options": ["Guatemala", "Xela"]},
+        {"dropdown": "¿Ciudad?", "label": "Selecciona", "options": ["Guatemala", "Xela"], "default": "Xela"},
         {"radio":    "¿Sexo?",   "options": ["Masculino", "Femenino"]},
         {"checkbox": "Intereses","options": ["A", "B", "C"], "min": 1, "max": 2},
+        {"chips":    "Intereses (chips)", "options": ["A", "B", "C"], "min": 1, "max": 2},
         {"date":     "Fecha de la cita", "label": "Selecciona fecha"},
+        {"calendar": "Fechas de estadía", "mode": "range", "min-days": 1, "max-days": 14},
+        {"email":    "Correo", "pattern": "[^@]+@[^@]+\\.[^@]+", "error": "Correo no válido", "default": "a@b.com"},
 
         {"optin": "Acepto los términos y condiciones", "terms": "TERMS"},
 

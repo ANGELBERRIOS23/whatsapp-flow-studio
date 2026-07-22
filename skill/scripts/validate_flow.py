@@ -384,6 +384,9 @@ def validate(flow):
             for cap in ("left-caption", "center-caption", "right-caption"):
                 if _clen(foot.get(cap, "")) > FOOTER_CAPTION:
                     r.warn(f"{where} → Footer", f'{cap} > {FOOTER_CAPTION} chars')
+            if foot.get("center-caption") and (foot.get("left-caption") or foot.get("right-caption")):
+                r.err(f"{where} → Footer",
+                      "no puede llevar center-caption junto a left/right-caption (usa uno u otro)")
             if foot.get("on-click-action", {}).get("name") == "complete":
                 has_complete = True
         if s.get("terminal") and top_footer and \
