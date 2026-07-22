@@ -1,0 +1,542 @@
+{
+  "version": "7.3",
+  "screens": [
+    {
+      "id": "QUESTION_ONE",
+      "title": "Registro de participante",
+      "data": {},
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          {
+            "type": "Form",
+            "name": "flow_path",
+            "children": [
+              {
+                "type": "TextHeading",
+                "text": "👋 ¡Bienvenido!"
+              },
+              {
+                "type": "TextBody",
+                "text": "Este formulario recoge tus datos para agendar tu cita. Toma 2 minutos y tu información se trata de forma confidencial."
+              },
+              {
+                "type": "TextSubheading",
+                "text": "👤 ¿Cuál es tu nombre completo?"
+              },
+              {
+                "type": "TextInput",
+                "input-type": "text",
+                "label": "Nombre y apellido",
+                "name": "Cul_es_tu_nombre_completo_6e50e8",
+                "required": true,
+                "helper-text": "Como aparece en tu DPI"
+              },
+              {
+                "type": "TextSubheading",
+                "text": "📧 Tu correo electrónico"
+              },
+              {
+                "type": "TextInput",
+                "input-type": "email",
+                "label": "correo@dominio.com",
+                "name": "Tu_correo_electrnico_f1762f",
+                "required": true
+              },
+              {
+                "type": "TextSubheading",
+                "text": "📱 Tu número de teléfono"
+              },
+              {
+                "type": "TextInput",
+                "input-type": "phone",
+                "label": "+502 ...",
+                "name": "Tu_nmero_de_telfono_abe13b",
+                "required": true,
+                "helper-text": "Sin espacios ni guiones"
+              },
+              {
+                "type": "TextSubheading",
+                "text": "¿Cómo prefieres que te contactemos?"
+              },
+              {
+                "type": "RadioButtonsGroup",
+                "label": "Selecciona una opción",
+                "name": "Cmo_prefieres_que_te_contactemos_c31b81",
+                "required": true,
+                "data-source": [
+                  {
+                    "id": "0_WhatsApp",
+                    "title": "WhatsApp"
+                  },
+                  {
+                    "id": "1_Llamada",
+                    "title": "Llamada"
+                  },
+                  {
+                    "id": "2_Correo",
+                    "title": "Correo"
+                  }
+                ]
+              },
+              {
+                "type": "Footer",
+                "label": "Continuar",
+                "on-click-action": {
+                  "name": "navigate",
+                  "next": {
+                    "name": "DATOS",
+                    "type": "screen"
+                  },
+                  "payload": {
+                    "screen_0_Cul_es_tu_nombre_completo_0": "${form.Cul_es_tu_nombre_completo_6e50e8}",
+                    "screen_0_Tu_correo_electrnico_1": "${form.Tu_correo_electrnico_f1762f}",
+                    "screen_0_Tu_nmero_de_telfono_2": "${form.Tu_nmero_de_telfono_abe13b}",
+                    "screen_0_Cmo_prefieres_que_te_contactemos_3": "${form.Cmo_prefieres_que_te_contactemos_c31b81}"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "DATOS",
+      "title": "Tus datos",
+      "data": {
+        "screen_0_Cul_es_tu_nombre_completo_0": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_Tu_correo_electrnico_1": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_Tu_nmero_de_telfono_2": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_Cmo_prefieres_que_te_contactemos_3": {
+          "__example__": "Example",
+          "type": "string"
+        }
+      },
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          {
+            "type": "Form",
+            "name": "flow_path",
+            "children": [
+              {
+                "type": "TextSubheading",
+                "text": "🎂 ¿Cuántos años tienes?"
+              },
+              {
+                "type": "TextInput",
+                "input-type": "number",
+                "label": "Escribe tu edad",
+                "name": "Cuntos_aos_tienes_9162b9",
+                "required": true
+              },
+              {
+                "type": "TextSubheading",
+                "text": "🏙️ ¿En qué ciudad vives?"
+              },
+              {
+                "type": "Dropdown",
+                "label": "Selecciona tu ciudad",
+                "name": "En_qu_ciudad_vives_1282fe",
+                "required": true,
+                "data-source": [
+                  {
+                    "id": "0_Guatemala",
+                    "title": "Guatemala"
+                  },
+                  {
+                    "id": "1_Quetzaltenango",
+                    "title": "Quetzaltenango"
+                  },
+                  {
+                    "id": "2_Escuintla",
+                    "title": "Escuintla"
+                  },
+                  {
+                    "id": "3_Cobn",
+                    "title": "Cobán"
+                  },
+                  {
+                    "id": "4_Otra",
+                    "title": "Otra"
+                  }
+                ]
+              },
+              {
+                "type": "TextSubheading",
+                "text": "📅 ¿Qué día prefieres para tu cita?"
+              },
+              {
+                "type": "DatePicker",
+                "label": "Selecciona una fecha",
+                "name": "Qu_da_prefieres_para_tu_cita_51d5b8",
+                "required": true,
+                "helper-text": "De lunes a viernes"
+              },
+              {
+                "type": "TextSubheading",
+                "text": "🕐 Hora aproximada"
+              },
+              {
+                "type": "Dropdown",
+                "label": "Elige la hora",
+                "name": "Hora_aproximada_09cb1e",
+                "required": true,
+                "data-source": [
+                  {
+                    "id": "0_0800",
+                    "title": "08:00"
+                  },
+                  {
+                    "id": "1_0900",
+                    "title": "09:00"
+                  },
+                  {
+                    "id": "2_1000",
+                    "title": "10:00"
+                  },
+                  {
+                    "id": "3_1100",
+                    "title": "11:00"
+                  },
+                  {
+                    "id": "4_1400",
+                    "title": "14:00"
+                  },
+                  {
+                    "id": "5_1500",
+                    "title": "15:00"
+                  },
+                  {
+                    "id": "6_1600",
+                    "title": "16:00"
+                  }
+                ]
+              },
+              {
+                "type": "Footer",
+                "label": "Siguiente",
+                "on-click-action": {
+                  "name": "navigate",
+                  "next": {
+                    "name": "ENCUESTA",
+                    "type": "screen"
+                  },
+                  "payload": {
+                    "screen_1_Cuntos_aos_tienes_0": "${form.Cuntos_aos_tienes_9162b9}",
+                    "screen_1_En_qu_ciudad_vives_1": "${form.En_qu_ciudad_vives_1282fe}",
+                    "screen_1_Qu_da_prefieres_para_tu_cita_2": "${form.Qu_da_prefieres_para_tu_cita_51d5b8}",
+                    "screen_1_Hora_aproximada_3": "${form.Hora_aproximada_09cb1e}",
+                    "screen_0_Cul_es_tu_nombre_completo_0": "${data.screen_0_Cul_es_tu_nombre_completo_0}",
+                    "screen_0_Tu_correo_electrnico_1": "${data.screen_0_Tu_correo_electrnico_1}",
+                    "screen_0_Tu_nmero_de_telfono_2": "${data.screen_0_Tu_nmero_de_telfono_2}",
+                    "screen_0_Cmo_prefieres_que_te_contactemos_3": "${data.screen_0_Cmo_prefieres_que_te_contactemos_3}"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "ENCUESTA",
+      "title": "Cuéntanos más",
+      "data": {
+        "screen_0_Cul_es_tu_nombre_completo_0": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_Tu_correo_electrnico_1": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_Tu_nmero_de_telfono_2": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_Cmo_prefieres_que_te_contactemos_3": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_1_Cuntos_aos_tienes_0": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_1_En_qu_ciudad_vives_1": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_1_Qu_da_prefieres_para_tu_cita_2": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_1_Hora_aproximada_3": {
+          "__example__": "Example",
+          "type": "string"
+        }
+      },
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          {
+            "type": "Form",
+            "name": "flow_path",
+            "children": [
+              {
+                "type": "TextSubheading",
+                "text": "Ayúdanos a conocerte mejor"
+              },
+              {
+                "type": "TextSubheading",
+                "text": "🎯 ¿Qué temas te interesan? (elige hasta 3)"
+              },
+              {
+                "type": "CheckboxGroup",
+                "label": "Elige una o más",
+                "name": "Qu_temas_te_interesan_elige_hasta_3_03ef36",
+                "required": true,
+                "data-source": [
+                  {
+                    "id": "0_Salud",
+                    "title": "Salud"
+                  },
+                  {
+                    "id": "1_Educacin",
+                    "title": "Educación"
+                  },
+                  {
+                    "id": "2_Tecnologa",
+                    "title": "Tecnología"
+                  },
+                  {
+                    "id": "3_Finanzas",
+                    "title": "Finanzas"
+                  },
+                  {
+                    "id": "4_Emprendimiento",
+                    "title": "Emprendimiento"
+                  }
+                ],
+                "min-selected-items": 1,
+                "max-selected-items": 3
+              },
+              {
+                "type": "TextSubheading",
+                "text": "😊 ¿Qué tan satisfecho estás con nuestro servicio?"
+              },
+              {
+                "type": "RadioButtonsGroup",
+                "label": "Selecciona una opción",
+                "name": "Qu_tan_satisfecho_ests_con_nuestro_servicio_809e62",
+                "required": true,
+                "data-source": [
+                  {
+                    "id": "0_Muy_satisfecho",
+                    "title": "Muy satisfecho"
+                  },
+                  {
+                    "id": "1_Satisfecho",
+                    "title": "Satisfecho"
+                  },
+                  {
+                    "id": "2_Neutral",
+                    "title": "Neutral"
+                  },
+                  {
+                    "id": "3_Insatisfecho",
+                    "title": "Insatisfecho"
+                  }
+                ]
+              },
+              {
+                "type": "TextSubheading",
+                "text": "💬 ¿Algún comentario o solicitud especial?"
+              },
+              {
+                "type": "TextArea",
+                "label": "Escribe aquí",
+                "name": "Algn_comentario_o_solicitud_especial_b0eb4a",
+                "required": false
+              },
+              {
+                "type": "Footer",
+                "label": "Siguiente",
+                "on-click-action": {
+                  "name": "navigate",
+                  "next": {
+                    "name": "CONSENTIMIENTO",
+                    "type": "screen"
+                  },
+                  "payload": {
+                    "screen_2_Qu_temas_te_interesan_elige_hasta_3_0": "${form.Qu_temas_te_interesan_elige_hasta_3_03ef36}",
+                    "screen_2_Qu_tan_satisfecho_ests_con_nuestro_servicio_1": "${form.Qu_tan_satisfecho_ests_con_nuestro_servicio_809e62}",
+                    "screen_2_Algn_comentario_o_solicitud_especial_2": "${form.Algn_comentario_o_solicitud_especial_b0eb4a}",
+                    "screen_0_Cul_es_tu_nombre_completo_0": "${data.screen_0_Cul_es_tu_nombre_completo_0}",
+                    "screen_0_Tu_correo_electrnico_1": "${data.screen_0_Tu_correo_electrnico_1}",
+                    "screen_0_Tu_nmero_de_telfono_2": "${data.screen_0_Tu_nmero_de_telfono_2}",
+                    "screen_0_Cmo_prefieres_que_te_contactemos_3": "${data.screen_0_Cmo_prefieres_que_te_contactemos_3}",
+                    "screen_1_Cuntos_aos_tienes_0": "${data.screen_1_Cuntos_aos_tienes_0}",
+                    "screen_1_En_qu_ciudad_vives_1": "${data.screen_1_En_qu_ciudad_vives_1}",
+                    "screen_1_Qu_da_prefieres_para_tu_cita_2": "${data.screen_1_Qu_da_prefieres_para_tu_cita_2}",
+                    "screen_1_Hora_aproximada_3": "${data.screen_1_Hora_aproximada_3}"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "CONSENTIMIENTO",
+      "title": "Casi listo",
+      "data": {
+        "screen_0_Cul_es_tu_nombre_completo_0": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_Tu_correo_electrnico_1": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_Tu_nmero_de_telfono_2": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_Cmo_prefieres_que_te_contactemos_3": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_1_Cuntos_aos_tienes_0": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_1_En_qu_ciudad_vives_1": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_1_Qu_da_prefieres_para_tu_cita_2": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_1_Hora_aproximada_3": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_2_Qu_temas_te_interesan_elige_hasta_3_0": {
+          "__example__": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "screen_2_Qu_tan_satisfecho_ests_con_nuestro_servicio_1": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_2_Algn_comentario_o_solicitud_especial_2": {
+          "__example__": "Example",
+          "type": "string"
+        }
+      },
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          {
+            "type": "Form",
+            "name": "flow_path",
+            "children": [
+              {
+                "type": "TextBody",
+                "text": "Revisa y confirma para finalizar tu registro."
+              },
+              {
+                "type": "OptIn",
+                "label": "Acepto la política de privacidad y el tratamiento de mis datos",
+                "name": "Acepto_la_poltica_de_privacidad_y_el_tratamiento_de_mis_dato_262d1b",
+                "required": true,
+                "on-click-action": {
+                  "name": "navigate",
+                  "next": {
+                    "name": "TERMINOS",
+                    "type": "screen"
+                  },
+                  "payload": {}
+                }
+              },
+              {
+                "type": "OptIn",
+                "label": "Quiero recibir novedades y promociones por WhatsApp",
+                "name": "Quiero_recibir_novedades_y_promociones_por_WhatsApp_a3c941",
+                "required": false
+              },
+              {
+                "type": "Footer",
+                "label": "Enviar registro",
+                "on-click-action": {
+                  "name": "complete",
+                  "payload": {
+                    "screen_3_Acepto_la_poltica_de_privacidad_y_el_tratamiento_de_mis_dato_0": "${form.Acepto_la_poltica_de_privacidad_y_el_tratamiento_de_mis_dato_262d1b}",
+                    "screen_3_Quiero_recibir_novedades_y_promociones_por_WhatsApp_1": "${form.Quiero_recibir_novedades_y_promociones_por_WhatsApp_a3c941}",
+                    "screen_0_Cul_es_tu_nombre_completo_0": "${data.screen_0_Cul_es_tu_nombre_completo_0}",
+                    "screen_0_Tu_correo_electrnico_1": "${data.screen_0_Tu_correo_electrnico_1}",
+                    "screen_0_Tu_nmero_de_telfono_2": "${data.screen_0_Tu_nmero_de_telfono_2}",
+                    "screen_0_Cmo_prefieres_que_te_contactemos_3": "${data.screen_0_Cmo_prefieres_que_te_contactemos_3}",
+                    "screen_1_Cuntos_aos_tienes_0": "${data.screen_1_Cuntos_aos_tienes_0}",
+                    "screen_1_En_qu_ciudad_vives_1": "${data.screen_1_En_qu_ciudad_vives_1}",
+                    "screen_1_Qu_da_prefieres_para_tu_cita_2": "${data.screen_1_Qu_da_prefieres_para_tu_cita_2}",
+                    "screen_1_Hora_aproximada_3": "${data.screen_1_Hora_aproximada_3}",
+                    "screen_2_Qu_temas_te_interesan_elige_hasta_3_0": "${data.screen_2_Qu_temas_te_interesan_elige_hasta_3_0}",
+                    "screen_2_Qu_tan_satisfecho_ests_con_nuestro_servicio_1": "${data.screen_2_Qu_tan_satisfecho_ests_con_nuestro_servicio_1}",
+                    "screen_2_Algn_comentario_o_solicitud_especial_2": "${data.screen_2_Algn_comentario_o_solicitud_especial_2}"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "terminal": true,
+      "success": true
+    },
+    {
+      "id": "TERMINOS",
+      "title": "Política de privacidad",
+      "data": {},
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          {
+            "type": "Form",
+            "name": "flow_path",
+            "children": [
+              {
+                "type": "TextHeading",
+                "text": "📄 Tratamiento de datos"
+              },
+              {
+                "type": "TextBody",
+                "text": "Tus datos personales serán utilizados exclusivamente para gestionar tu cita y contactarte sobre los servicios solicitados.\n\n1. No compartimos tu información con terceros sin tu consentimiento.\n2. Puedes solicitar la eliminación de tus datos en cualquier momento.\n3. La información se almacena de forma segura y confidencial.\n\nAl aceptar, confirmas que has leído y comprendido esta política."
+              },
+              {
+                "type": "TextCaption",
+                "text": "Última actualización: julio 2026 · TuConsejería AI"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

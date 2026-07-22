@@ -1,0 +1,815 @@
+{
+  "version": "7.3",
+  "screens": [
+    {
+      "id": "QUESTION_ONE",
+      "title": "👤 Sobre ti",
+      "data": {},
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          {
+            "type": "Form",
+            "name": "flow_path",
+            "children": [
+              {
+                "type": "Dropdown",
+                "label": "🌎 País",
+                "name": "pais_a1e3ea",
+                "required": true,
+                "data-source": [
+                  {
+                    "id": "0_Bolivia",
+                    "title": "Bolivia"
+                  },
+                  {
+                    "id": "1_Brasil",
+                    "title": "Brasil"
+                  },
+                  {
+                    "id": "2_Colombia",
+                    "title": "Colombia"
+                  },
+                  {
+                    "id": "3_Ecuador",
+                    "title": "Ecuador"
+                  },
+                  {
+                    "id": "4_El_Salvador",
+                    "title": "El Salvador"
+                  },
+                  {
+                    "id": "5_Guatemala",
+                    "title": "Guatemala"
+                  },
+                  {
+                    "id": "6_Hait",
+                    "title": "Haití"
+                  },
+                  {
+                    "id": "7_Honduras",
+                    "title": "Honduras"
+                  },
+                  {
+                    "id": "8_Paraguay",
+                    "title": "Paraguay"
+                  },
+                  {
+                    "id": "9_Per",
+                    "title": "Perú"
+                  },
+                  {
+                    "id": "10_Repblica_Dominicana",
+                    "title": "República Dominicana"
+                  }
+                ]
+              },
+              {
+                "type": "TextInput",
+                "input-type": "text",
+                "label": "Nombre completo",
+                "name": "nombre_ed6c7a",
+                "required": true
+              },
+              {
+                "type": "DatePicker",
+                "label": "Fecha de nacimiento",
+                "name": "fecha_nacimiento_872563",
+                "required": true
+              },
+              {
+                "type": "RadioButtonsGroup",
+                "label": "Género",
+                "name": "genero_c1943d",
+                "required": true,
+                "data-source": [
+                  {
+                    "id": "0_Mujer",
+                    "title": "👩🏼 Mujer"
+                  },
+                  {
+                    "id": "1_Hombre",
+                    "title": "👨🏼 Hombre"
+                  },
+                  {
+                    "id": "2_Prefiero_no_responder_Otro",
+                    "title": "Prefiero no responder / Otro"
+                  }
+                ]
+              },
+              {
+                "type": "TextSubheading",
+                "text": "🎓 Máximo nivel de estudios alcanzado (completado)"
+              },
+              {
+                "type": "RadioButtonsGroup",
+                "label": "Nivel de estudios",
+                "name": "nivel_estudios_c59389",
+                "required": true,
+                "data-source": [
+                  {
+                    "id": "0_Primaria",
+                    "title": "Primaria"
+                  },
+                  {
+                    "id": "1_Secundaria",
+                    "title": "Secundaria"
+                  },
+                  {
+                    "id": "2_Tcnico_terciario",
+                    "title": "Técnico / terciario"
+                  },
+                  {
+                    "id": "3_Universitario",
+                    "title": "Universitario"
+                  },
+                  {
+                    "id": "4_Posgrado",
+                    "title": "Posgrado"
+                  }
+                ]
+              },
+              {
+                "type": "RadioButtonsGroup",
+                "label": "¿Estudias actualmente?",
+                "name": "estudia_actualmente_7235d7",
+                "required": true,
+                "data-source": [
+                  {
+                    "id": "0_No_estudio",
+                    "title": "No estudio"
+                  },
+                  {
+                    "id": "1_Secundaria",
+                    "title": "Secundaria"
+                  },
+                  {
+                    "id": "2_Tcnico",
+                    "title": "Técnico"
+                  },
+                  {
+                    "id": "3_Universitario",
+                    "title": "Universitario"
+                  },
+                  {
+                    "id": "4_Posgrado",
+                    "title": "Posgrado"
+                  }
+                ]
+              },
+              {
+                "type": "RadioButtonsGroup",
+                "label": "¿Trabajas actualmente?",
+                "name": "trabaja_actualmente_df965d",
+                "required": true,
+                "data-source": [
+                  {
+                    "id": "0_No_trabajo",
+                    "title": "No trabajo"
+                  },
+                  {
+                    "id": "1_Empleadoa_en_empresaorg",
+                    "title": "Empleado/a en empresa/org."
+                  },
+                  {
+                    "id": "2_Cuenta_propia_emprendimiento",
+                    "title": "Cuenta propia / emprendimiento"
+                  },
+                  {
+                    "id": "3_Buscando_empleo",
+                    "title": "Buscando empleo"
+                  }
+                ]
+              },
+              {
+                "type": "Footer",
+                "label": "Continuar",
+                "on-click-action": {
+                  "name": "navigate",
+                  "next": {
+                    "name": "EXPERIENCIA_PLAN",
+                    "type": "screen"
+                  },
+                  "payload": {
+                    "screen_0_pais_0": "${form.pais_a1e3ea}",
+                    "screen_0_nombre_1": "${form.nombre_ed6c7a}",
+                    "screen_0_fecha_nacimiento_2": "${form.fecha_nacimiento_872563}",
+                    "screen_0_genero_3": "${form.genero_c1943d}",
+                    "screen_0_nivel_estudios_4": "${form.nivel_estudios_c59389}",
+                    "screen_0_estudia_actualmente_5": "${form.estudia_actualmente_7235d7}",
+                    "screen_0_trabaja_actualmente_6": "${form.trabaja_actualmente_df965d}"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "EXPERIENCIA_PLAN",
+      "title": "💚 Tu experiencia",
+      "data": {
+        "screen_0_pais_0": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_nombre_1": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_fecha_nacimiento_2": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_genero_3": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_nivel_estudios_4": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_estudia_actualmente_5": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_trabaja_actualmente_6": {
+          "__example__": "Example",
+          "type": "string"
+        }
+      },
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          {
+            "type": "Form",
+            "name": "flow_path",
+            "children": [
+              {
+                "type": "TextSubheading",
+                "text": "📊 ¿Cómo participaste en Plan International? (elegí una)"
+              },
+              {
+                "type": "RadioButtonsGroup",
+                "label": "Tu participación",
+                "name": "participacion_92ad7f",
+                "required": true,
+                "data-source": [
+                  {
+                    "id": "0_Nionia_patrocinadoa",
+                    "title": "Niño/niña patrocinado(a)"
+                  },
+                  {
+                    "id": "1_Participante_en_proyectos",
+                    "title": "Participante en proyectos"
+                  },
+                  {
+                    "id": "2_Ambas_opciones",
+                    "title": "Ambas opciones"
+                  },
+                  {
+                    "id": "3_No_recuerdo_con_certeza",
+                    "title": "No recuerdo con certeza"
+                  },
+                  {
+                    "id": "4_Otro",
+                    "title": "Otro"
+                  }
+                ]
+              },
+              {
+                "type": "TextSubheading",
+                "text": "De las áreas en las que trabaja Plan International, ¿cuáles te interesan más?"
+              },
+              {
+                "type": "CheckboxGroup",
+                "label": "Marca hasta 3 opciones",
+                "name": "areas_interes_692d0d",
+                "required": true,
+                "data-source": [
+                  {
+                    "id": "0_Educacin",
+                    "title": "Educación"
+                  },
+                  {
+                    "id": "1_Igualdad_de_gnero_y_derechos",
+                    "title": "Igualdad de género y derechos"
+                  },
+                  {
+                    "id": "2_Proteccin_frente_a_violencia",
+                    "title": "Protección frente a violencia"
+                  },
+                  {
+                    "id": "3_Salud_y_bienestar_juvenil",
+                    "title": "Salud y bienestar juvenil"
+                  },
+                  {
+                    "id": "4_Participacin_y_liderazgo",
+                    "title": "Participación y liderazgo"
+                  },
+                  {
+                    "id": "5_Oportunidades_y_empleabilidad",
+                    "title": "Oportunidades y empleabilidad"
+                  },
+                  {
+                    "id": "6_Tecnologa_e_innovacin",
+                    "title": "Tecnología e innovación"
+                  },
+                  {
+                    "id": "7_Ambiente_y_cambio_climtico",
+                    "title": "Ambiente y cambio climático"
+                  },
+                  {
+                    "id": "8_Accin_humanitariaemergencias",
+                    "title": "Acción humanitaria/emergencias"
+                  },
+                  {
+                    "id": "9_Otro",
+                    "title": "Otro"
+                  }
+                ],
+                "min-selected-items": 1,
+                "max-selected-items": 3
+              },
+              {
+                "type": "TextBody",
+                "text": "Según tu experiencia, ¿qué tan probable es que recomiendes a Plan International como una organización en la que vale la pena participar? (0 = Nada probable · 10 = Totalmente probable)"
+              },
+              {
+                "type": "RadioButtonsGroup",
+                "label": "Tu puntaje (0-10)",
+                "name": "nps_recomienda_3cfad0",
+                "required": true,
+                "data-source": [
+                  {
+                    "id": "0_0",
+                    "title": "0"
+                  },
+                  {
+                    "id": "1_1",
+                    "title": "1"
+                  },
+                  {
+                    "id": "2_2",
+                    "title": "2"
+                  },
+                  {
+                    "id": "3_3",
+                    "title": "3"
+                  },
+                  {
+                    "id": "4_4",
+                    "title": "4"
+                  },
+                  {
+                    "id": "5_5",
+                    "title": "5"
+                  },
+                  {
+                    "id": "6_6",
+                    "title": "6"
+                  },
+                  {
+                    "id": "7_7",
+                    "title": "7"
+                  },
+                  {
+                    "id": "8_8",
+                    "title": "8"
+                  },
+                  {
+                    "id": "9_9",
+                    "title": "9"
+                  },
+                  {
+                    "id": "10_10",
+                    "title": "10"
+                  }
+                ]
+              },
+              {
+                "type": "TextSubheading",
+                "text": "¿Qué es lo que más valoras o recuerdas de tu experiencia con Plan? (elegí una)"
+              },
+              {
+                "type": "RadioButtonsGroup",
+                "label": "Lo que más valoras",
+                "name": "mas_valoras_4bb2eb",
+                "required": true,
+                "data-source": [
+                  {
+                    "id": "0_Relacin_con_patrocinadora",
+                    "title": "Relación con patrocinador/a"
+                  },
+                  {
+                    "id": "1_Actividades_y_proyectos",
+                    "title": "Actividades y proyectos"
+                  },
+                  {
+                    "id": "2_Formacin_y_capacitaciones",
+                    "title": "Formación y capacitaciones"
+                  },
+                  {
+                    "id": "3_Liderazgo_y_participacin",
+                    "title": "Liderazgo y participación"
+                  },
+                  {
+                    "id": "4_Amistades_y_comunidad",
+                    "title": "Amistades y comunidad"
+                  },
+                  {
+                    "id": "5_Otro",
+                    "title": "Otro"
+                  }
+                ]
+              },
+              {
+                "type": "Footer",
+                "label": "Continuar",
+                "on-click-action": {
+                  "name": "navigate",
+                  "next": {
+                    "name": "CONTACTO",
+                    "type": "screen"
+                  },
+                  "payload": {
+                    "screen_1_participacion_0": "${form.participacion_92ad7f}",
+                    "screen_1_areas_interes_1": "${form.areas_interes_692d0d}",
+                    "screen_1_nps_recomienda_2": "${form.nps_recomienda_3cfad0}",
+                    "screen_1_mas_valoras_3": "${form.mas_valoras_4bb2eb}",
+                    "screen_0_pais_0": "${data.screen_0_pais_0}",
+                    "screen_0_nombre_1": "${data.screen_0_nombre_1}",
+                    "screen_0_fecha_nacimiento_2": "${data.screen_0_fecha_nacimiento_2}",
+                    "screen_0_genero_3": "${data.screen_0_genero_3}",
+                    "screen_0_nivel_estudios_4": "${data.screen_0_nivel_estudios_4}",
+                    "screen_0_estudia_actualmente_5": "${data.screen_0_estudia_actualmente_5}",
+                    "screen_0_trabaja_actualmente_6": "${data.screen_0_trabaja_actualmente_6}"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "CONTACTO",
+      "title": "📩 Sigamos en contacto",
+      "data": {
+        "screen_0_pais_0": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_nombre_1": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_fecha_nacimiento_2": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_genero_3": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_nivel_estudios_4": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_estudia_actualmente_5": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_trabaja_actualmente_6": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_1_participacion_0": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_1_areas_interes_1": {
+          "__example__": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "screen_1_nps_recomienda_2": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_1_mas_valoras_3": {
+          "__example__": "Example",
+          "type": "string"
+        }
+      },
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          {
+            "type": "Form",
+            "name": "flow_path",
+            "children": [
+              {
+                "type": "TextSubheading",
+                "text": "¿Hubo alguna actividad o proyecto que haya impactado positivamente tu vida?"
+              },
+              {
+                "type": "TextArea",
+                "label": "Cuéntanos aquí",
+                "name": "actividad_impacto_5087a5",
+                "required": false,
+                "helper-text": "Cuéntanos brevemente, en 2 o 3 líneas."
+              },
+              {
+                "type": "TextSubheading",
+                "text": "📞 ¿Te gustaría seguir en contacto con Plan International?"
+              },
+              {
+                "type": "RadioButtonsGroup",
+                "label": "Tu respuesta",
+                "name": "seguir_contacto_e775fd",
+                "required": false,
+                "data-source": [
+                  {
+                    "id": "0_S",
+                    "title": "Sí"
+                  },
+                  {
+                    "id": "1_No",
+                    "title": "No"
+                  },
+                  {
+                    "id": "2_Tal_vez",
+                    "title": "Tal vez"
+                  }
+                ]
+              },
+              {
+                "type": "TextSubheading",
+                "text": "📬 ¿Por cuál medio prefieres recibir información?"
+              },
+              {
+                "type": "RadioButtonsGroup",
+                "label": "Medio preferido",
+                "name": "medio_preferido_c75bbb",
+                "required": false,
+                "data-source": [
+                  {
+                    "id": "0_WhatsApp",
+                    "title": "WhatsApp"
+                  },
+                  {
+                    "id": "1_Correo_electrnico",
+                    "title": "Correo electrónico"
+                  },
+                  {
+                    "id": "2_Ambos",
+                    "title": "Ambos"
+                  }
+                ]
+              },
+              {
+                "type": "TextBody",
+                "text": "¿Te gustaría formar parte de una comunidad o grupo de WhatsApp de jóvenes egresados?"
+              },
+              {
+                "type": "RadioButtonsGroup",
+                "label": "Tu respuesta",
+                "name": "comunidad_whatsapp_68b47f",
+                "required": false,
+                "data-source": [
+                  {
+                    "id": "0_S",
+                    "title": "Sí"
+                  },
+                  {
+                    "id": "1_No",
+                    "title": "No"
+                  }
+                ]
+              },
+              {
+                "type": "Footer",
+                "label": "Continuar",
+                "on-click-action": {
+                  "name": "navigate",
+                  "next": {
+                    "name": "PARTICIPAR",
+                    "type": "screen"
+                  },
+                  "payload": {
+                    "screen_2_actividad_impacto_0": "${form.actividad_impacto_5087a5}",
+                    "screen_2_seguir_contacto_1": "${form.seguir_contacto_e775fd}",
+                    "screen_2_medio_preferido_2": "${form.medio_preferido_c75bbb}",
+                    "screen_2_comunidad_whatsapp_3": "${form.comunidad_whatsapp_68b47f}",
+                    "screen_0_pais_0": "${data.screen_0_pais_0}",
+                    "screen_0_nombre_1": "${data.screen_0_nombre_1}",
+                    "screen_0_fecha_nacimiento_2": "${data.screen_0_fecha_nacimiento_2}",
+                    "screen_0_genero_3": "${data.screen_0_genero_3}",
+                    "screen_0_nivel_estudios_4": "${data.screen_0_nivel_estudios_4}",
+                    "screen_0_estudia_actualmente_5": "${data.screen_0_estudia_actualmente_5}",
+                    "screen_0_trabaja_actualmente_6": "${data.screen_0_trabaja_actualmente_6}",
+                    "screen_1_participacion_0": "${data.screen_1_participacion_0}",
+                    "screen_1_areas_interes_1": "${data.screen_1_areas_interes_1}",
+                    "screen_1_nps_recomienda_2": "${data.screen_1_nps_recomienda_2}",
+                    "screen_1_mas_valoras_3": "${data.screen_1_mas_valoras_3}"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "PARTICIPAR",
+      "title": "✨ Cómo participar",
+      "data": {
+        "screen_0_pais_0": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_nombre_1": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_fecha_nacimiento_2": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_genero_3": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_nivel_estudios_4": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_estudia_actualmente_5": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_0_trabaja_actualmente_6": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_1_participacion_0": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_1_areas_interes_1": {
+          "__example__": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "screen_1_nps_recomienda_2": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_1_mas_valoras_3": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_2_actividad_impacto_0": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_2_seguir_contacto_1": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_2_medio_preferido_2": {
+          "__example__": "Example",
+          "type": "string"
+        },
+        "screen_2_comunidad_whatsapp_3": {
+          "__example__": "Example",
+          "type": "string"
+        }
+      },
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          {
+            "type": "Form",
+            "name": "flow_path",
+            "children": [
+              {
+                "type": "TextSubheading",
+                "text": "🙌🏼 ¿Te interesaría colaborar con Plan en actividades futuras?"
+              },
+              {
+                "type": "RadioButtonsGroup",
+                "label": "Tu respuesta",
+                "name": "colaborar_futuro_e343ef",
+                "required": false,
+                "data-source": [
+                  {
+                    "id": "0_S",
+                    "title": "Sí"
+                  },
+                  {
+                    "id": "1_No",
+                    "title": "No"
+                  }
+                ]
+              },
+              {
+                "type": "TextSubheading",
+                "text": "🌟 ¿De qué manera te gustaría participar en la Red de Egresados?"
+              },
+              {
+                "type": "CheckboxGroup",
+                "label": "Marca las que apliquen",
+                "name": "formas_participar_b81dfd",
+                "required": false,
+                "data-source": [
+                  {
+                    "id": "0_Recibir_novedades_de_Plan",
+                    "title": "Recibir novedades de Plan"
+                  },
+                  {
+                    "id": "1_Apoyar_campaas",
+                    "title": "Apoyar campañas"
+                  },
+                  {
+                    "id": "2_Participar_en_eventos",
+                    "title": "Participar en eventos"
+                  },
+                  {
+                    "id": "3_Participar_como_voluntarioa",
+                    "title": "Participar como voluntario/a"
+                  },
+                  {
+                    "id": "4_Compartir_mi_testimonio",
+                    "title": "Compartir mi testimonio"
+                  },
+                  {
+                    "id": "5_Apoyar_en_mi_comunidad",
+                    "title": "Apoyar en mi comunidad"
+                  },
+                  {
+                    "id": "6_Otro",
+                    "title": "Otro"
+                  }
+                ]
+              },
+              {
+                "type": "TextSubheading",
+                "text": "💬 En una frase, ¿qué ha significado Plan International para ti?"
+              },
+              {
+                "type": "TextArea",
+                "label": "Tu frase",
+                "name": "frase_significado_ac2381",
+                "required": false
+              },
+              {
+                "type": "TextSubheading",
+                "text": "¡Gracias por compartir tu tiempo e historia con nosotros! 💚"
+              },
+              {
+                "type": "TextBody",
+                "text": "Tu participación nos ayuda a construir la Red de Egresados de Plan International. Pronto tendrás noticias nuestras. 👋🏼"
+              },
+              {
+                "type": "Footer",
+                "label": "Finalizar",
+                "on-click-action": {
+                  "name": "complete",
+                  "payload": {
+                    "screen_3_colaborar_futuro_0": "${form.colaborar_futuro_e343ef}",
+                    "screen_3_formas_participar_1": "${form.formas_participar_b81dfd}",
+                    "screen_3_frase_significado_2": "${form.frase_significado_ac2381}",
+                    "screen_0_pais_0": "${data.screen_0_pais_0}",
+                    "screen_0_nombre_1": "${data.screen_0_nombre_1}",
+                    "screen_0_fecha_nacimiento_2": "${data.screen_0_fecha_nacimiento_2}",
+                    "screen_0_genero_3": "${data.screen_0_genero_3}",
+                    "screen_0_nivel_estudios_4": "${data.screen_0_nivel_estudios_4}",
+                    "screen_0_estudia_actualmente_5": "${data.screen_0_estudia_actualmente_5}",
+                    "screen_0_trabaja_actualmente_6": "${data.screen_0_trabaja_actualmente_6}",
+                    "screen_1_participacion_0": "${data.screen_1_participacion_0}",
+                    "screen_1_areas_interes_1": "${data.screen_1_areas_interes_1}",
+                    "screen_1_nps_recomienda_2": "${data.screen_1_nps_recomienda_2}",
+                    "screen_1_mas_valoras_3": "${data.screen_1_mas_valoras_3}",
+                    "screen_2_actividad_impacto_0": "${data.screen_2_actividad_impacto_0}",
+                    "screen_2_seguir_contacto_1": "${data.screen_2_seguir_contacto_1}",
+                    "screen_2_medio_preferido_2": "${data.screen_2_medio_preferido_2}",
+                    "screen_2_comunidad_whatsapp_3": "${data.screen_2_comunidad_whatsapp_3}"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "terminal": true,
+      "success": true
+    }
+  ]
+}

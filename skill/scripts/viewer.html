@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visor de WhatsApp Flow</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html,body { margin:0; padding:0; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #ced9de; color:#111b21; padding: 18px; min-height:100vh;
+  }
+  .toolbar {
+    max-width: 900px; margin: 0 auto 16px; display:flex; flex-wrap:wrap;
+    gap:10px; align-items:center; justify-content:center;
+  }
+  .seg { display:inline-flex; background:#fff; border:1px solid #cfd8dc; border-radius:10px; overflow:hidden; }
+  .seg button { border:0; background:transparent; padding:8px 14px; font-size:13px; cursor:pointer; color:#3b4a54; display:flex; gap:6px; align-items:center; }
+  .seg button.active { background:#008069; color:#fff; }
+  .toolbar .btn { border:1px solid #cfd8dc; background:#fff; border-radius:10px; padding:8px 14px; font-size:13px; cursor:pointer; color:#111b21; }
+  .toolbar .btn:hover { background:#f3f6f7; }
+  .toolbar select { border:1px solid #cfd8dc; border-radius:10px; padding:8px 10px; font-size:13px; background:#fff; }
+  .hint { text-align:center; font-size:12px; color:#4a5a63; max-width:760px; margin:0 auto 14px; }
+
+  /* ===== Marco del teléfono ===== */
+  .stage { display:flex; justify-content:center; }
+  .phone {
+    width: 390px; max-width: 96vw; height: 800px; max-height: 88vh;
+    border-radius: 34px; background:#000; padding:10px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.35); position:relative;
+  }
+  .screen {
+    width:100%; height:100%; border-radius:26px; overflow:hidden;
+    display:flex; flex-direction:column; position:relative;
+    background: var(--bg); color: var(--text);
+    font-family: var(--font);
+  }
+  /* Tema y plataforma como variables */
+  .screen[data-theme="light"] {
+    --bg:#ffffff; --panel:#ffffff; --header:#ffffff; --text:#111b21; --text2:#667781;
+    --border:#d6dee2; --divider:#eceff1; --field:#ffffff; --accent:#008069; --accent-t:#ffffff;
+    --btn-off-bg:#f0f2f5; --btn-off-t:#aab4ba; --sheet:#ffffff; --statusbg:#ffffff;
+  }
+  .screen[data-theme="dark"] {
+    --bg:#0b141a; --panel:#111b21; --header:#1f2c33; --text:#e9edef; --text2:#8696a0;
+    --border:#2a3942; --divider:#182229; --field:#0b141a; --accent:#00a884; --accent-t:#08120f;
+    --btn-off-bg:#202c33; --btn-off-t:#55636b; --sheet:#233138; --statusbg:#1f2c33;
+  }
+  .screen[data-platform="ios"]   { --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif; }
+  .screen[data-platform="android"]{ --font: Roboto, "Segoe UI", system-ui, sans-serif; }
+
+  .statusbar { height:26px; background:var(--statusbg); color:var(--text); display:flex; align-items:center; justify-content:space-between; padding:0 18px; font-size:12px; font-weight:600; }
+  .statusbar .right { display:flex; gap:5px; align-items:center; }
+
+  .hdr { height:56px; flex:0 0 auto; background:var(--header); display:flex; align-items:center; padding:0 12px; border-bottom:1px solid var(--divider); gap:8px; }
+  .hdr .ic { width:30px; height:30px; display:flex; align-items:center; justify-content:center; font-size:20px; color:var(--text); cursor:pointer; opacity:.9; }
+  .hdr .title { flex:1; text-align:center; font-size:16px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .screen[data-platform="ios"] .hdr .title { font-weight:600; }
+  .screen[data-platform="ios"] .hdr { justify-content:center; }
+
+  .body { flex:1 1 auto; overflow-y:auto; padding:16px 16px 12px; background:var(--bg); }
+  .body::-webkit-scrollbar { width:6px; } .body::-webkit-scrollbar-thumb { background:#8894; border-radius:3px; }
+
+  .c-heading   { font-size:21px; font-weight:700; margin:6px 0 10px; line-height:1.25; }
+  .c-subheading{ font-size:15px; font-weight:700; margin:16px 0 8px; line-height:1.3; }
+  .c-body      { font-size:14.5px; color:var(--text); margin:8px 0; line-height:1.45; white-space:pre-wrap; }
+  .c-caption   { font-size:12.5px; color:var(--text2); margin:6px 0; line-height:1.4; white-space:pre-wrap; }
+  .c-img       { width:100%; border-radius:10px; margin:10px 0; display:block; }
+
+  .field { border:1px solid var(--border); border-radius:10px; background:var(--field); margin:8px 0; }
+  .screen[data-platform="ios"] .field { border-radius:12px; }
+  .field.text { padding:0 14px; }
+  .field input, .field textarea { width:100%; border:0; outline:0; background:transparent; color:var(--text); font-family:inherit; font-size:15px; padding:15px 0; }
+  .field textarea { resize:none; min-height:96px; padding-top:14px; }
+  .field input::placeholder, .field textarea::placeholder { color:var(--text2); }
+  .helper { font-size:12px; color:var(--text2); margin:-2px 2px 8px; }
+  .counter { text-align:right; font-size:11px; color:var(--text2); padding:0 4px 8px; margin-top:-6px; }
+
+  /* Selector (dropdown / date) tipo caja con chevron */
+  .selectbox { display:flex; align-items:center; padding:15px 14px; cursor:pointer; }
+  .selectbox .val { flex:1; font-size:15px; color:var(--text2); }
+  .selectbox .val.filled { color:var(--text); }
+  .selectbox .chev { color:var(--text2); font-size:18px; }
+
+  /* Grupos radio/checkbox */
+  .grouplabel { font-size:15px; font-weight:700; margin:16px 2px 6px; }
+  .opt-row { display:flex; align-items:center; gap:12px; padding:13px 2px; border-bottom:1px solid var(--divider); cursor:pointer; }
+  .opt-row:last-child { border-bottom:0; }
+  .opt-row .lbl { flex:1; font-size:15px; }
+  .ind { width:20px; height:20px; flex:0 0 auto; border:2px solid #b0bcc4; border-radius:50%; position:relative; }
+  .cbx .ind { border-radius:5px; }
+  .opt-row.sel .ind { border-color:var(--accent); }
+  .opt-row.sel .ind::after { content:""; position:absolute; inset:3px; background:var(--accent); border-radius:50%; }
+  .cbx .opt-row.sel .ind::after { inset:0; background:var(--accent); border-radius:4px; }
+  .cbx .opt-row.sel .ind::before { content:"✓"; position:absolute; inset:0; color:#fff; font-size:13px; display:flex; align-items:center; justify-content:center; z-index:1; }
+  /* iOS: check verde en vez de círculo lleno */
+  .screen[data-platform="ios"] .ind { border:none; }
+  .screen[data-platform="ios"] .opt-row .ind::after { content:""; }
+  .screen[data-platform="ios"] .opt-row.sel .ind { border:none; }
+  .screen[data-platform="ios"] .opt-row.sel .ind::after { content:"✓"; background:transparent; inset:0; color:var(--accent); font-size:19px; font-weight:700; display:flex; align-items:center; justify-content:center; border-radius:0; }
+  .screen[data-platform="ios"] .cbx .opt-row.sel .ind::before { content:""; }
+
+  .optin { display:flex; gap:12px; align-items:flex-start; padding:12px 2px; }
+  .optin .ind { border-radius:5px; margin-top:2px; }
+  .optin .lbl { flex:1; font-size:13.5px; color:var(--text); line-height:1.4; }
+  .optin .more { color:var(--accent); font-weight:600; cursor:pointer; }
+
+  /* Footer */
+  .footer { flex:0 0 auto; padding:10px 16px 16px; background:var(--bg); border-top:1px solid var(--divider); }
+  .footer .cap { display:flex; justify-content:space-between; font-size:11px; color:var(--text2); margin-bottom:6px; }
+  .cta { width:100%; border:0; border-radius:26px; padding:15px; font-size:15.5px; font-weight:600; font-family:inherit; cursor:pointer; background:var(--accent); color:var(--accent-t); }
+  .cta:disabled { background:var(--btn-off-bg); color:var(--btn-off-t); cursor:not-allowed; }
+  .screen[data-platform="ios"] .cta { border-radius:14px; }
+
+  /* Sheets / overlays dentro del teléfono */
+  .overlay { position:absolute; inset:0; background:rgba(0,0,0,.35); display:flex; align-items:flex-end; z-index:20; }
+  .sheet { width:100%; background:var(--sheet); border-radius:16px 16px 0 0; max-height:70%; overflow:auto; padding:8px 0 12px; }
+  .sheet h4 { margin:12px 18px; font-size:15px; color:var(--text); }
+  .sheet .srow { padding:14px 18px; font-size:15px; color:var(--text); cursor:pointer; border-bottom:1px solid var(--divider); }
+  .sheet .srow:hover { background:rgba(128,128,128,.12); }
+  .sheet .actions { display:flex; gap:10px; justify-content:flex-end; padding:12px 18px 4px; }
+  .sheet .actions button { border:0; background:transparent; color:var(--accent); font-weight:600; font-size:15px; padding:8px 10px; cursor:pointer; }
+  .sheet input[type=date] { margin:8px 18px; padding:12px; font-size:16px; border:1px solid var(--border); border-radius:10px; background:var(--field); color:var(--text); }
+
+  .done { position:absolute; inset:0; background:var(--bg); z-index:30; display:flex; flex-direction:column; padding:26px 20px; overflow:auto; }
+  .done .big { font-size:44px; text-align:center; margin-top:24px; }
+  .done h3 { text-align:center; color:var(--text); font-size:19px; margin:8px 0 4px; }
+  .done p { text-align:center; color:var(--text2); font-size:13px; margin:0 0 16px; }
+  .done .ans { background:var(--sheet); border-radius:12px; padding:6px 14px; }
+  .done .ans .r { padding:9px 0; border-bottom:1px solid var(--divider); font-size:13px; }
+  .done .ans .r:last-child { border-bottom:0; }
+  .done .ans .k { color:var(--text2); font-size:11px; text-transform:uppercase; letter-spacing:.03em; }
+  .done .ans .v { color:var(--text); margin-top:2px; word-break:break-word; }
+  .done .again { margin:18px auto 0; }
+
+  .empty { text-align:center; color:var(--text2); padding:60px 20px; font-size:14px; }
+  .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#c0392b; color:#fff; padding:10px 16px; border-radius:8px; font-size:13px; display:none; z-index:99; }
+</style>
+</head>
+<body>
+  <div class="toolbar">
+    <div class="seg" id="platform">
+      <button data-v="android" class="active">🤖 Android</button>
+      <button data-v="ios"> iOS</button>
+    </div>
+    <div class="seg" id="theme">
+      <button data-v="light" class="active">☀️ Claro</button>
+      <button data-v="dark">🌙 Oscuro</button>
+    </div>
+    <select id="screenSel" title="Ir a pantalla"></select>
+    <button class="btn" id="reset">↺ Reiniciar</button>
+    <button class="btn" id="loadBtn">📂 Cargar JSON</button>
+    <button class="btn" id="pasteBtn">📋 Pegar JSON</button>
+    <input type="file" id="file" accept=".json,application/json" style="display:none">
+  </div>
+  <div class="hint">Vista previa de WhatsApp Flow · llena los campos y toca el botón para navegar / enviar. Los saltos de lógica (If) se evalúan en vivo.</div>
+
+  <div class="stage">
+    <div class="phone">
+      <div class="screen" id="screen" data-platform="android" data-theme="light">
+        <div class="statusbar"><span id="clock">9:41</span><span class="right">📶 🔋</span></div>
+        <div class="hdr"><div class="ic" id="closeIc">✕</div><div class="title" id="hdrTitle">—</div><div class="ic">⋮</div></div>
+        <div class="body" id="body"></div>
+        <div class="footer" id="footer"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script id="flowData" type="application/json">null</script>
+  <script>
+  (function(){
+    "use strict";
+    var state = { flow:null, screenId:null, platform:"android", theme:"light", form:{}, data:{}, history:[], optLookup:{} };
+    var $ = function(id){ return document.getElementById(id); };
+    var screenEl = $("screen");
+
+    // ---------- carga ----------
+    function loadFromScript(){
+      try { var raw = $("flowData").textContent.trim(); var f = JSON.parse(raw); if(f && f.screens) setFlow(f); } catch(e){}
+    }
+    function setFlow(f){
+      state.flow = f; state.form={}; state.data={}; state.history=[];
+      state.screenId = f.screens && f.screens.length ? f.screens[0].id : null;
+      buildScreenSelector(); render();
+    }
+    function buildScreenSelector(){
+      var sel = $("screenSel"); sel.innerHTML="";
+      (state.flow.screens||[]).forEach(function(s,i){
+        var o=document.createElement("option"); o.value=s.id; o.textContent=(i+1)+". "+(s.title||s.id); sel.appendChild(o);
+      });
+      sel.value = state.screenId;
+    }
+    function toast(msg){ var t=$("toast"); t.textContent=msg; t.style.display="block"; setTimeout(function(){t.style.display="none";},2600); }
+
+    // ---------- utilidades ----------
+    function screenById(id){ return (state.flow.screens||[]).find(function(s){return s.id===id;}); }
+    function formChildren(scr){
+      var kids = (scr.layout&&scr.layout.children)||[];
+      var form = kids.find(function(c){return c.type==="Form";});
+      return form ? (form.children||[]) : kids;
+    }
+    function imgSrc(src){
+      if(!src) return "";
+      if(src.indexOf("data:")===0) return src;
+      var mime = src.indexOf("/9j/")===0 ? "image/jpeg" : "image/png";
+      return "data:"+mime+";base64,"+src;
+    }
+    function resolveRef(v){
+      if(typeof v!=="string") return v;
+      var m = v.match(/^\$\{(form|data)\.([^}]+)\}$/);
+      if(!m) return v;
+      if(m[1]==="form") return state.form[m[2]];
+      return state.data[m[2]];
+    }
+    function evalCondition(expr){
+      try{
+        var e = expr.replace(/\$\{(form|data)\.([^}]+)\}/g, function(_,k,n){
+          var val = k==="form" ? state.form[n] : state.data[n];
+          if(Array.isArray(val)) return JSON.stringify(val);
+          return JSON.stringify(val==null? "" : String(val));
+        });
+        // eslint-disable-next-line no-new-func
+        return !!(new Function("return ("+e+");")());
+      }catch(err){ return false; }
+    }
+
+    // Devuelve {content:[...], footer:comp} evaluando If/Switch del nivel superior
+    function activeParts(scr){
+      var out={content:[], footer:null};
+      function walk(list){
+        (list||[]).forEach(function(c){
+          if(!c||typeof c!=="object") return;
+          if(c.type==="Footer"){ out.footer=c; return; }
+          if(c.type==="If"){ walk(evalCondition(c.condition)? c.then : (c["else"]||[])); return; }
+          if(c.type==="Switch"){
+            var val = resolveRef(c.value); var cs=c.cases||{};
+            walk(cs[val]!=null? cs[val] : (cs["default"]||[])); return;
+          }
+          out.content.push(c);
+        });
+      }
+      walk(formChildren(scr));
+      return out;
+    }
+
+    function isFilled(c){
+      var v = state.form[c.name];
+      if(c.type==="CheckboxGroup"){ var min = c["min-selected-items"]||1; return Array.isArray(v)&&v.length>=min; }
+      if(c.type==="OptIn"){ return v===true; }
+      return v!=null && v!=="";
+    }
+    function requiredOK(parts){
+      return parts.content.every(function(c){
+        var needs = ["TextInput","TextArea","Dropdown","RadioButtonsGroup","CheckboxGroup","DatePicker","OptIn"].indexOf(c.type)>=0;
+        if(!needs) return true;
+        if(c.required===false) return true;
+        return isFilled(c);
+      });
+    }
+
+    // ---------- render ----------
+    function render(){
+      screenEl.setAttribute("data-platform", state.platform);
+      screenEl.setAttribute("data-theme", state.theme);
+      var scr = state.screenId && screenById(state.screenId);
+      var body=$("body"), footer=$("footer");
+      body.innerHTML=""; footer.innerHTML="";
+      if(!state.flow){ body.innerHTML='<div class="empty">Carga un Flow JSON con «📂 Cargar JSON» o «📋 Pegar JSON».</div>'; $("hdrTitle").textContent="—"; return; }
+      if(!scr){ body.innerHTML='<div class="empty">Pantalla no encontrada.</div>'; return; }
+      $("hdrTitle").textContent = scr.title||scr.id;
+      $("screenSel").value = scr.id;
+
+      var parts = activeParts(scr);
+      parts.content.forEach(function(c){ body.appendChild(renderComp(c)); });
+
+      if(parts.footer){
+        var f = parts.footer, wrap=document.createElement("div");
+        if(f["left-caption"]||f["center-caption"]||f["right-caption"]){
+          var cap=document.createElement("div"); cap.className="cap";
+          cap.innerHTML='<span>'+(f["left-caption"]||"")+'</span><span>'+(f["center-caption"]||"")+'</span><span>'+(f["right-caption"]||"")+'</span>';
+          wrap.appendChild(cap);
+        }
+        var btn=document.createElement("button"); btn.className="cta"; btn.textContent=f.label||"Continuar";
+        btn.disabled = !requiredOK(parts);
+        btn.onclick=function(){ doAction(f["on-click-action"]); };
+        wrap.appendChild(btn); footer.appendChild(wrap);
+      }
+    }
+
+    function renderComp(c){
+      var el=document.createElement("div");
+      switch(c.type){
+        case "TextHeading":    el.className="c-heading"; el.textContent=c.text; break;
+        case "TextSubheading": el.className="c-subheading"; el.textContent=c.text; break;
+        case "TextBody":       el.className="c-body"; el.textContent=c.text; break;
+        case "TextCaption":    el.className="c-caption"; el.textContent=c.text; break;
+        case "RichText":       el.className="c-body"; el.textContent=Array.isArray(c.text)?c.text.join("\n"):c.text; break;
+        case "Image":          var im=document.createElement("img"); im.className="c-img"; im.src=imgSrc(c.src); if(c.height)im.style.maxHeight=c.height+"px"; im.style.objectFit=(c["scale-type"]==="cover")?"cover":"contain"; return im;
+        case "TextInput":      return renderInput(c);
+        case "TextArea":       return renderTextarea(c);
+        case "Dropdown":       return renderDropdown(c);
+        case "RadioButtonsGroup": return renderChoice(c,false);
+        case "CheckboxGroup":  return renderChoice(c,true);
+        case "DatePicker":     return renderDate(c);
+        case "OptIn":          return renderOptIn(c);
+        default:               el.className="c-caption"; el.textContent="["+c.type+"]";
+      }
+      return el;
+    }
+
+    function renderInput(c){
+      var wrap=document.createElement("div"), f=document.createElement("div"); f.className="field text";
+      var typeMap={email:"email",number:"number",phone:"tel",password:"password",passcode:"text",text:"text"};
+      var inp=document.createElement("input"); inp.type=typeMap[c["input-type"]]||"text";
+      if(c["input-type"]==="passcode"||c["input-type"]==="number") inp.inputMode="numeric";
+      inp.placeholder=c.label||""; inp.value=state.form[c.name]||"";
+      inp.oninput=function(){ state.form[c.name]=inp.value; updateFooter(); };
+      f.appendChild(inp); wrap.appendChild(f);
+      if(c["helper-text"]){ var h=document.createElement("div"); h.className="helper"; h.textContent=c["helper-text"]; wrap.appendChild(h); }
+      return wrap;
+    }
+    function renderTextarea(c){
+      var wrap=document.createElement("div"), f=document.createElement("div"); f.className="field text";
+      var ta=document.createElement("textarea"); ta.placeholder=c.label||""; ta.value=state.form[c.name]||"";
+      var max=c["max-length"]||600;
+      ta.oninput=function(){ state.form[c.name]=ta.value; cnt.textContent=(ta.value.length)+" / "+max; updateFooter(); };
+      f.appendChild(ta); wrap.appendChild(f);
+      var cnt=document.createElement("div"); cnt.className="counter"; cnt.textContent=((state.form[c.name]||"").length)+" / "+max; wrap.appendChild(cnt);
+      if(c["helper-text"]){ var h=document.createElement("div"); h.className="helper"; h.textContent=c["helper-text"]; wrap.appendChild(h); }
+      return wrap;
+    }
+    function renderDropdown(c){
+      registerOpts(c);
+      var wrap=document.createElement("div"), box=document.createElement("div"); box.className="field";
+      var sb=document.createElement("div"); sb.className="selectbox";
+      var cur=state.form[c.name]; var curTitle = cur ? titleOf(c,cur) : (c.label||"Selecciona");
+      sb.innerHTML='<div class="val'+(cur?' filled':'')+'">'+esc(curTitle)+'</div><div class="chev">›</div>';
+      sb.onclick=function(){ openSheet(c.label||"Selecciona", c["data-source"]||[], function(id){ state.form[c.name]=id; render(); }); };
+      box.appendChild(sb); wrap.appendChild(box);
+      if(c["helper-text"]){ var h=document.createElement("div"); h.className="helper"; h.textContent=c["helper-text"]; wrap.appendChild(h); }
+      return wrap;
+    }
+    function renderChoice(c, multi){
+      registerOpts(c);
+      var wrap=document.createElement("div"); wrap.className=multi?"cbx":"";
+      if(c.label){ var gl=document.createElement("div"); gl.className="grouplabel"; gl.textContent=c.label; wrap.appendChild(gl); }
+      (c["data-source"]||[]).forEach(function(o){
+        var row=document.createElement("div"); row.className="opt-row";
+        var sel = multi ? (Array.isArray(state.form[c.name])&&state.form[c.name].indexOf(o.id)>=0) : (state.form[c.name]===o.id);
+        if(sel) row.className+=" sel";
+        row.innerHTML='<div class="lbl">'+esc(o.title)+(o.description?'<div class="c-caption" style="margin:2px 0 0">'+esc(o.description)+'</div>':'')+'</div><div class="ind"></div>';
+        row.onclick=function(){
+          if(multi){
+            var arr = Array.isArray(state.form[c.name])? state.form[c.name].slice():[];
+            var i=arr.indexOf(o.id);
+            if(i>=0) arr.splice(i,1);
+            else { var mx=c["max-selected-items"]; if(mx && arr.length>=mx){ toast("Máximo "+mx+" opciones"); return;} arr.push(o.id); }
+            state.form[c.name]=arr;
+          } else { state.form[c.name]=o.id; }
+          render();
+        };
+        wrap.appendChild(row);
+      });
+      return wrap;
+    }
+    function renderDate(c){
+      var wrap=document.createElement("div"), box=document.createElement("div"); box.className="field";
+      var sb=document.createElement("div"); sb.className="selectbox";
+      var cur=state.form[c.name];
+      sb.innerHTML='<div class="val'+(cur?' filled':'')+'">'+esc(cur||c.label||"Selecciona fecha")+'</div><div class="chev">📅</div>';
+      sb.onclick=function(){ openDate(c, function(v){ state.form[c.name]=v; render(); }); };
+      box.appendChild(sb); wrap.appendChild(box);
+      if(c["helper-text"]){ var h=document.createElement("div"); h.className="helper"; h.textContent=c["helper-text"]; wrap.appendChild(h); }
+      return wrap;
+    }
+    function renderOptIn(c){
+      var wrap=document.createElement("div"); wrap.className="cbx";
+      var row=document.createElement("div"); row.className="optin"+(state.form[c.name]===true?" sel":"");
+      var more = c["on-click-action"] ? ' <span class="more">Leer más</span>':'';
+      row.innerHTML='<div class="ind"></div><div class="lbl">'+esc(c.label)+more+'</div>';
+      row.querySelector(".ind").onclick=function(e){ e.stopPropagation(); state.form[c.name]=!(state.form[c.name]===true); render(); };
+      row.querySelector(".lbl").onclick=function(e){
+        if(e.target.classList.contains("more") && c["on-click-action"]){ doAction(c["on-click-action"]); return; }
+        state.form[c.name]=!(state.form[c.name]===true); render();
+      };
+      wrap.appendChild(row);
+      return wrap;
+    }
+
+    function registerOpts(c){ state.optLookup[c.name]={}; (c["data-source"]||[]).forEach(function(o){ state.optLookup[c.name][o.id]=o.title; }); }
+    function titleOf(c,id){ return (state.optLookup[c.name]&&state.optLookup[c.name][id])|| id; }
+    function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(m){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m];}); }
+
+    function updateFooter(){
+      var scr=screenById(state.screenId); if(!scr) return;
+      var parts=activeParts(scr); var btn=$("footer").querySelector(".cta");
+      if(btn) btn.disabled=!requiredOK(parts);
+    }
+
+    // ---------- sheets ----------
+    function openSheet(title, options, onPick){
+      var ov=document.createElement("div"); ov.className="overlay";
+      var sh=document.createElement("div"); sh.className="sheet";
+      sh.innerHTML='<h4>'+esc(title)+'</h4>';
+      options.forEach(function(o){ var r=document.createElement("div"); r.className="srow"; r.textContent=o.title; r.onclick=function(){ ov.remove(); onPick(o.id); }; sh.appendChild(r); });
+      ov.appendChild(sh); ov.onclick=function(e){ if(e.target===ov) ov.remove(); }; screenEl.appendChild(ov);
+    }
+    function openDate(c, onPick){
+      var ov=document.createElement("div"); ov.className="overlay";
+      var sh=document.createElement("div"); sh.className="sheet";
+      sh.innerHTML='<h4>'+esc(c.label||"Fecha")+'</h4>';
+      var inp=document.createElement("input"); inp.type="date"; if(state.form[c.name]) inp.value=state.form[c.name];
+      if(c["min-date"]) inp.min=c["min-date"]; if(c["max-date"]) inp.max=c["max-date"];
+      sh.appendChild(inp);
+      var act=document.createElement("div"); act.className="actions";
+      var cancel=document.createElement("button"); cancel.textContent="Cancelar"; cancel.onclick=function(){ov.remove();};
+      var ok=document.createElement("button"); ok.textContent="OK"; ok.onclick=function(){ if(inp.value) onPick(inp.value); ov.remove(); };
+      act.appendChild(cancel); act.appendChild(ok); sh.appendChild(act);
+      ov.appendChild(sh); ov.onclick=function(e){ if(e.target===ov) ov.remove(); }; screenEl.appendChild(ov);
+    }
+
+    // ---------- acciones ----------
+    function doAction(action){
+      if(!action) return;
+      var payload = action.payload||{};
+      // resolver payload -> data
+      var resolved={};
+      Object.keys(payload).forEach(function(k){ resolved[k]=resolveRef(payload[k]); });
+      if(action.name==="navigate"){
+        Object.keys(resolved).forEach(function(k){ state.data[k]=resolved[k]; });
+        state.history.push(state.screenId);
+        state.screenId = action.next && action.next.name;
+        render();
+        $("body").scrollTop=0;
+      } else if(action.name==="complete"){
+        Object.keys(resolved).forEach(function(k){ state.data[k]=resolved[k]; });
+        showDone(resolved);
+      } else if(action.name==="data_exchange"){
+        toast("data_exchange requiere endpoint (no simulable aquí)");
+      }
+    }
+    function back(){
+      if(state.history.length){ state.screenId=state.history.pop(); render(); }
+    }
+
+    function showDone(resolved){
+      var d=document.createElement("div"); d.className="done";
+      var rows="";
+      Object.keys(resolved).forEach(function(k){
+        var v=resolved[k];
+        if(Array.isArray(v)) v=v.map(prettyVal).join(", ");
+        else v=prettyVal(v);
+        var label=k.replace(/^screen_\d+_/,"").replace(/_\d+$/,"").replace(/_/g," ");
+        rows+='<div class="r"><div class="k">'+esc(label)+'</div><div class="v">'+esc(v||"—")+'</div></div>';
+      });
+      d.innerHTML='<div class="big">✅</div><h3>¡Enviado!</h3><p>Esto es lo que recibiría tu webhook / n8n:</p><div class="ans">'+(rows||'<div class="r">(sin datos)</div>')+'</div>';
+      var again=document.createElement("button"); again.className="cta again"; again.textContent="↺ Probar de nuevo";
+      again.onclick=function(){ d.remove(); resetSim(); };
+      d.appendChild(again); screenEl.appendChild(d);
+    }
+    function prettyVal(v){
+      // intentar mostrar el título de la opción si coincide con algún id
+      for(var name in state.optLookup){ if(state.optLookup[name][v]) return state.optLookup[name][v]; }
+      return v;
+    }
+
+    function resetSim(){
+      state.form={}; state.data={}; state.history=[];
+      state.screenId = state.flow.screens[0].id;
+      var d=screenEl.querySelector(".done"); if(d) d.remove();
+      var ov=screenEl.querySelector(".overlay"); if(ov) ov.remove();
+      render();
+    }
+
+    // ---------- controles ----------
+    $("platform").addEventListener("click",function(e){ var b=e.target.closest("button"); if(!b)return; state.platform=b.dataset.v; setSeg("platform",b); render(); });
+    $("theme").addEventListener("click",function(e){ var b=e.target.closest("button"); if(!b)return; state.theme=b.dataset.v; setSeg("theme",b); render(); });
+    function setSeg(id,btn){ $(id).querySelectorAll("button").forEach(function(x){x.classList.remove("active");}); btn.classList.add("active"); }
+    $("screenSel").addEventListener("change",function(){ state.screenId=this.value; render(); $("body").scrollTop=0; });
+    $("reset").onclick=function(){ if(state.flow) resetSim(); };
+    $("closeIc").onclick=function(){ back(); };
+    $("loadBtn").onclick=function(){ $("file").click(); };
+    $("file").addEventListener("change",function(e){
+      var f=e.target.files[0]; if(!f) return; var rd=new FileReader();
+      rd.onload=function(){ try{ setFlow(JSON.parse(rd.result)); }catch(err){ toast("JSON inválido: "+err.message); } };
+      rd.readAsText(f);
+    });
+    $("pasteBtn").onclick=function(){
+      var txt=prompt("Pega aquí el Flow JSON:");
+      if(txt){ try{ setFlow(JSON.parse(txt)); }catch(err){ toast("JSON inválido: "+err.message); } }
+    };
+
+    // estado inicial desde URL (?platform=ios&theme=dark&screen=ID) — útil para compartir/probar
+    (function(){
+      var p=new URLSearchParams(location.search);
+      if(p.get("platform")==="ios"||p.get("platform")==="android") state.platform=p.get("platform");
+      if(p.get("theme")==="dark"||p.get("theme")==="light") state.theme=p.get("theme");
+      $("platform").querySelectorAll("button").forEach(function(b){ b.classList.toggle("active", b.dataset.v===state.platform); });
+      $("theme").querySelectorAll("button").forEach(function(b){ b.classList.toggle("active", b.dataset.v===state.theme); });
+      loadFromScript();
+      if(state.flow && p.get("screen") && screenById(p.get("screen"))) state.screenId=p.get("screen");
+    })();
+    render();
+  })();
+  </script>
+</body>
+</html>
