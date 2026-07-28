@@ -338,7 +338,7 @@
             </div>
             <div class="f"><label>Modelo</label><input id="aiModel" type="text" placeholder="modelo"></div>
             <div class="f full" id="aiBaseWrap" style="display:none"><label>Base URL (custom)</label><input id="aiBase" type="text" placeholder="https://tu-endpoint/v1"></div>
-            <div class="f full"><label>API key (se guarda solo en tu navegador)</label><input id="aiKey" type="password" placeholder="sk-… / AI… — nunca se sube a ningún lado"></div>
+            <div class="f full"><label>API key (se guarda solo en tu navegador) · <span id="aiClearKey" style="color:var(--brand-d);cursor:pointer;font-weight:700">borrar</span></label><input id="aiKey" type="password" placeholder="sk-… / AI… — nunca se sube a ningún lado"></div>
             <div class="ai-note">🔒 <b>Privacidad:</b> el Asistente IA es <b>opcional</b> — todo lo demás funciona sin API. Cuando lo usas, tu navegador llama <b>directo</b> al proveedor (OpenAI/Google/Anthropic/…): <b>ni tus datos ni tu API key pasan por ningún servidor</b> — ni de este sitio ni de nadie. La key se guarda solo en tu <code>localStorage</code>. Por CORS funciona mejor servido (GitHub Pages / localhost).</div>
           </div>
           <div class="ai-msgs" id="aiMsgs"></div>
@@ -463,7 +463,9 @@ var INPUTKINDS=["text","email","phone","number","password","passcode"];
 var DEFSEL={Dropdown:"Selecciona",RadioButtonsGroup:"Selecciona una opción",CheckboxGroup:"Elige una o más",ChipsSelector:"Elige una o más"};
 function normOptions(opts){var out=[],used={};(opts||[]).forEach(function(o,i){var item;if(typeof o==="string")item={id:i+"_"+sanitize(o),title:o};else{var t=o.title||("Opción "+i);item={id:o.id||(i+"_"+sanitize(t)),title:t};if(o.description)item.description=o.description;}var b=item.id,n=1;while(used[item.id]){item.id=b+"_"+n;n++;}used[item.id]=1;out.push(item);});return out;}
 function tok(blk,text){return (sanitize(blk.key||text)).slice(0,60)||"campo";}
-function describeInput(si,idx,blk){
+// Conserva el name/pkey ORIGINALES del flow importado (no romper el contrato de datos del webhook)
+function describeInput(si,idx,blk){var d=_describeInputRaw(si,idx,blk);if(d){if(blk._name)d.name=blk._name;if(blk._pkey)d.pkey=blk._pkey;}return d;}
+function _describeInputRaw(si,idx,blk){
   for(var i=0;i<INPUTKINDS.length;i++){var k=INPUTKINDS[i];if(k in blk){var q=blk[k],t=tok(blk,q);return{kind:"textinput",input_type:(k==="text"?"text":k),question:q,label:blk.label!=null?blk.label:q,token:t,name:t+"_"+shortHash(si,idx,q),pkey:"screen_"+si+"_"+t+"_"+idx,dtype:"string",blk:blk};}}
   if("textarea" in blk){var q=blk.textarea,t=tok(blk,q);return{kind:"textarea",question:q,label:blk.label!=null?blk.label:q,token:t,name:t+"_"+shortHash(si,idx,q),pkey:"screen_"+si+"_"+t+"_"+idx,dtype:"string",blk:blk};}
   if("date" in blk){var q=blk.date,t=tok(blk,q);return{kind:"date",question:q,label:blk.label!=null?blk.label:q,token:t,name:t+"_"+shortHash(si,idx,q),pkey:"screen_"+si+"_"+t+"_"+idx,dtype:"string",blk:blk};}
@@ -563,10 +565,12 @@ function buildFlow(spec){
    Flow JSON -> spec compacta  (best-effort, para el constructor)
    ============================================================ */
 function formChildren(scr){var k=(scr.layout&&scr.layout.children)||[];var f=k.find(function(c){return c.type==="Form";});return f?(f.children||[]):k;}
+function payloadMap(scr){var m={};(function walk(list){(list||[]).forEach(function(c){if(!c)return;if(c.type==="Footer"){var pl=(c["on-click-action"]||{}).payload||{};Object.keys(pl).forEach(function(K){var v=pl[K],mm=(typeof v==="string")&&v.match(/^\$\{form\.([^}]+)\}$/);if(mm)m[mm[1]]=K;});}if(c.type==="If"){walk(c.then);walk(c["else"]);}});})(formChildren(scr));return m;}
 function flowToSpec(flow){
   var spec={version:flow.version||"7.3",question_as_subheading:false,screens:[]},advanced=false;
   (flow.screens||[]).forEach(function(scr){
     var s={id:scr.id,title:scr.title||"",blocks:[]};
+    var pm=payloadMap(scr);function mark(b,c){b._name=c.name;if(pm[c.name])b._pkey=pm[c.name];return b;}
     formChildren(scr).forEach(function(c){
       switch(c.type){
         case "TextHeading":s.blocks.push({heading:c.text});break;
@@ -574,15 +578,15 @@ function flowToSpec(flow){
         case "TextBody":s.blocks.push({body:c.text});break;
         case "TextCaption":/^─+$/.test(c.text||"")?s.blocks.push({divider:true}):s.blocks.push({caption:c.text});break;
         case "Image":s.blocks.push({image:c.src,height:c.height});break;
-        case "TextInput":{var b={};b[c["input-type"]||"text"]=c.label;b.label=c.label;b.key=cleanKey(c.name);if(c.required===false)b.required=false;if(c["helper-text"])b.helper=c["helper-text"];if(c.pattern)b.pattern=c.pattern;if(c["error-message"])b.error=c["error-message"];if(c["init-value"]!=null&&c["init-value"]!=="")b.default=c["init-value"];s.blocks.push(b);}break;
-        case "TextArea":{var b={textarea:c.label,label:c.label,key:cleanKey(c.name)};if(c.required===false)b.required=false;if(c["helper-text"])b.helper=c["helper-text"];if(c["init-value"]!=null&&c["init-value"]!=="")b.default=c["init-value"];s.blocks.push(b);}break;
-        case "DatePicker":{var b={date:c.label,label:c.label,key:cleanKey(c.name)};if(c.required===false)b.required=false;if(c["min-date"])b["min-date"]=c["min-date"];if(c["max-date"])b["max-date"]=c["max-date"];if(c["init-value"])b.default=c["init-value"];s.blocks.push(b);}break;
-        case "CalendarPicker":{var b={calendar:c.title||c.label,label:c.label,key:cleanKey(c.name),mode:c.mode||"single"};if(c.required===false)b.required=false;if(c["helper-text"])b.helper=c["helper-text"];if(c["min-date"])b["min-date"]=c["min-date"];if(c["max-date"])b["max-date"]=c["max-date"];if(c["min-days"]!=null)b["min-days"]=c["min-days"];if(c["max-days"]!=null)b["max-days"]=c["max-days"];s.blocks.push(b);}break;
+        case "TextInput":{var b={};b[c["input-type"]||"text"]=c.label;b.label=c.label;b.key=cleanKey(c.name);if(c.required===false)b.required=false;if(c["helper-text"])b.helper=c["helper-text"];if(c.pattern)b.pattern=c.pattern;if(c["error-message"])b.error=c["error-message"];if(c["init-value"]!=null&&c["init-value"]!=="")b.default=c["init-value"];s.blocks.push(mark(b,c));}break;
+        case "TextArea":{var b={textarea:c.label,label:c.label,key:cleanKey(c.name)};if(c.required===false)b.required=false;if(c["helper-text"])b.helper=c["helper-text"];if(c["init-value"]!=null&&c["init-value"]!=="")b.default=c["init-value"];s.blocks.push(mark(b,c));}break;
+        case "DatePicker":{var b={date:c.label,label:c.label,key:cleanKey(c.name)};if(c.required===false)b.required=false;if(c["min-date"])b["min-date"]=c["min-date"];if(c["max-date"])b["max-date"]=c["max-date"];if(c["init-value"])b.default=c["init-value"];s.blocks.push(mark(b,c));}break;
+        case "CalendarPicker":{var b={calendar:c.title||c.label,label:c.label,key:cleanKey(c.name),mode:c.mode||"single"};if(c.required===false)b.required=false;if(c["helper-text"])b.helper=c["helper-text"];if(c["min-date"])b["min-date"]=c["min-date"];if(c["max-date"])b["max-date"]=c["max-date"];if(c["min-days"]!=null)b["min-days"]=c["min-days"];if(c["max-days"]!=null)b["max-days"]=c["max-days"];s.blocks.push(mark(b,c));}break;
         case "Dropdown":case "RadioButtonsGroup":case "CheckboxGroup":case "ChipsSelector":{
           var t={Dropdown:"dropdown",RadioButtonsGroup:"radio",CheckboxGroup:"checkbox",ChipsSelector:"chips"}[c.type];var b={};b[t]=c.label;b.label=c.label;b.key=cleanKey(c.name);b.options=(c["data-source"]||[]).map(function(o){return o.title;});if(c.required===false)b.required=false;if(c["min-selected-items"]!=null)b.min=c["min-selected-items"];if(c["max-selected-items"]!=null)b.max=c["max-selected-items"];
           if(c["init-value"]!=null){var iv=c["init-value"],DS=(c["data-source"]||[]);function _t(id){var f=DS.filter(function(o){return o.id===id;})[0];return f?f.title:id;}b.default=Array.isArray(iv)?iv.map(_t):_t(iv);}
-          s.blocks.push(b);}break;
-        case "OptIn":{var b={optin:c.label,key:cleanKey(c.name)};if(c.required===false)b.required=false;if(c["on-click-action"]&&c["on-click-action"].next)b.terms=c["on-click-action"].next.name;if(c["init-value"]===true)b.default=true;s.blocks.push(b);}break;
+          s.blocks.push(mark(b,c));}break;
+        case "OptIn":{var b={optin:c.label,key:cleanKey(c.name)};if(c.required===false)b.required=false;if(c["on-click-action"]&&c["on-click-action"].next)b.terms=c["on-click-action"].next.name;if(c["init-value"]===true)b.default=true;s.blocks.push(mark(b,c));}break;
         case "Footer":s.footer=c.label;break;
         case "If":case "Switch":advanced=true;break;
       }
@@ -800,8 +804,11 @@ function newSpec(){return{version:"7.3",question_as_subheading:true,screens:[{ti
 function blockType(b){for(var k in TEXTBLOCK)if(k in b)return k;if("divider" in b)return "divider";for(var i=0;i<INPUTKINDS.length;i++)if(INPUTKINDS[i] in b)return INPUTKINDS[i];if("textarea" in b)return "textarea";if("calendar" in b)return "calendar";if("date" in b)return "date";if("dropdown" in b)return "dropdown";if("radio" in b)return "radio";if("checkbox" in b)return "checkbox";if("chips" in b)return "chips";if("optin" in b)return "optin";if("image" in b)return "image";return "?";}
 function typeMeta(k){return BLOCK_TYPES.find(function(t){return t.k===k;})||{label:k,icon:"txt"};}
 
-function importToBuilder(flow){var sp=flowToSpec(flow);state.spec=sp;state.qas=sp.question_as_subheading!==false;$("#qasSwitch").className="switch"+(state.qas?" on":"");state.bScreen=0;renderBuilder();if(sp._advanced){toast("Este flow tiene saltos/lógica: edítalo en la pestaña JSON para no perderlos.");}else{regen();}}
+function importToBuilder(flow){var sp=flowToSpec(flow);state.spec=sp;state.qas=sp.question_as_subheading!==false;$("#qasSwitch").className="switch"+(state.qas?" on":"");state.bScreen=0;renderBuilder();
+  /* NO se re-genera al cargar: el flow queda EXACTO (conserva names/keys de datos). Al editar en el constructor se regenera preservando esas keys. */
+  if(sp._advanced)toast("Este flow tiene saltos/lógica: edítalo con cuidado (o en la pestaña JSON).");}
 function regen(){ // spec -> flow -> preview + code
+  if(state.spec&&state.spec._advanced){toast("Flow con lógica avanzada: edítalo en «Editor JSON» o con el Asistente IA para no perder los saltos.");return;}
   try{ensureIds();state.spec.question_as_subheading=state.qas;var flow=buildFlow(state.spec);setFlow(flow);}catch(e){toast("Error al generar: "+e.message,true);}
 }
 var regenTimer;function regenSoon(){clearTimeout(regenTimer);regenTimer=setTimeout(regen,250);}
@@ -1058,6 +1065,7 @@ function aiInitCfg(){
 $("#aiProvider").addEventListener("change",function(){AI.cfg.provider=this.value;if(!AI.cfg.model||Object.values(PROV).indexOf(AI.cfg.model)>=0)AI.cfg.model=PROV[this.value];aiInitCfg();aiSave();});
 $("#aiModel").addEventListener("input",function(){AI.cfg.model=this.value;aiSave();});
 $("#aiKey").addEventListener("input",function(){AI.cfg.key=this.value;aiSave();});
+$("#aiClearKey").onclick=function(){AI.cfg.key="";$("#aiKey").value="";aiSave();toast("API key borrada de este navegador");};
 $("#aiBase").addEventListener("input",function(){AI.cfg.base=this.value;aiSave();});
 
 function aiBubble(role,text,typing){var b=document.createElement("div");b.className="bubble "+(role==="user"?"user":role==="sys"?"sys":"ai");if(typing)b.innerHTML='<span class="typing"><i></i><i></i><i></i></span>';else b.textContent=text;$("#aiMsgs").appendChild(b);$("#aiMsgs").scrollTop=1e9;if(!typing&&role!=="sys")AI.msgs.push({role:role,text:text});return b;}

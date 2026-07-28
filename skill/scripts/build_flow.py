@@ -195,6 +195,18 @@ def norm_options(opts):
 
 
 def describe_input(si, input_idx, blk):
+    """Descriptor de un input. Conserva name/pkey ORIGINALES si el bloque trae
+    _name/_pkey (para editar flows existentes sin romper las keys del webhook)."""
+    d = _describe_input_raw(si, input_idx, blk)
+    if d:
+        if blk.get("_name"):
+            d["name"] = blk["_name"]
+        if blk.get("_pkey"):
+            d["pkey"] = blk["_pkey"]
+    return d
+
+
+def _describe_input_raw(si, input_idx, blk):
     """Descriptor de un bloque de input (o None). Mismo cálculo en pre-pass y generación."""
     def tok(text):
         return (sanitize(blk.get("key") or text)[:60]) or "campo"
