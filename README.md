@@ -61,6 +61,7 @@ skill/                            Skill de Claude Code: build_flow.py, validate_
 - Un único `index.html`: HTML + CSS + JS vanilla. Sin build, sin npm, sin CDN.
 - El generador `spec → Flow JSON` maneja lo tedioso y propenso a errores: nombres únicos, claves de payload, reenvío acumulado de datos entre pantallas, declaraciones `data`, saltos de lógica (`If` con footer en ambas ramas) e `id` de pantalla válidos.
 - Flow JSON objetivo: **v7.3**. Genera flows **estáticos** (`navigate` + `complete`); para flows con *endpoint* (`data_exchange`, ideal para disponibilidad tipo booking) necesitas además un servidor con cifrado — fuera del alcance de esta herramienta.
+- **Seguridad:** sin `eval` ni `new Function`. Las condiciones de los saltos de lógica se evalúan con un mini-parser propio (solo literales y los operadores `== != < > <= >= && || !`), así **cargar un flow de terceros no puede ejecutar código** en tu navegador. Las imágenes se restringen a `data:image/`. La app **no hace ninguna petición de red** salvo, si tú lo activas, al proveedor de IA que configures.
 
 ## 🧩 Skill de Claude Code incluida (carpeta `skill/`)
 

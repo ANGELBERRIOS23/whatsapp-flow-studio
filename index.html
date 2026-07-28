@@ -611,12 +611,41 @@ function buildScreenSel(){var sel=$("#screenSel");sel.innerHTML="";(state.flow&&
 function toast(m,err){var t=$("#toast");t.textContent=m;t.className="toast"+(err?" err":"");t.style.display="block";setTimeout(function(){t.style.display="none";},2600);}
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(m){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m];});}
 function screenById(id){return (state.flow&&state.flow.screens||[]).find(function(s){return s.id===id;});}
-function imgSrc(src){if(!src)return "";if(src.indexOf("data:")===0)return src;var mime=src.indexOf("/9j/")===0?"image/jpeg":"image/png";return "data:"+mime+";base64,"+src;}
+function imgSrc(src){if(!src||typeof src!=="string")return "";if(/^data:image\//i.test(src))return src;if(src.indexOf("data:")===0)return "";/* rechaza data: que no sea imagen */var mime=src.indexOf("/9j/")===0?"image/jpeg":"image/png";return "data:"+mime+";base64,"+src;}
 function resolveRef(v){if(typeof v!=="string")return v;var m=v.match(/^\$\{(form|data)\.([^}]+)\}$/);if(!m)return v;return m[1]==="form"?state.form[m[2]]:state.data[m[2]];}
-function evalCond(expr){try{var e=expr.replace(/\$\{(form|data)\.([^}]+)\}/g,function(_,k,n){var val=k==="form"?state.form[n]:state.data[n];if(Array.isArray(val))return JSON.stringify(val);return JSON.stringify(val==null?"":String(val));});return !!(new Function("return ("+e+");")());}catch(e){return false;}}
+/* Evaluador SEGURO de condiciones (sin eval/new Function): solo literales y
+   los operadores == != < > <= >= && || ! y paréntesis. Evita ejecución de código
+   arbitrario si se carga un flow malicioso. */
+function safeCond(expr){
+  var t=[],i=0,n=expr.length;
+  while(i<n){var c=expr[i];
+    if(c===" "||c==="\t"||c==="\n"){i++;continue;}
+    if(c==='"'||c==="'"){var q=c,s="";i++;while(i<n&&expr[i]!==q){if(expr[i]==="\\"){s+=(expr[i+1]||"");i+=2;}else{s+=expr[i++];}}i++;t.push(["s",s]);continue;}
+    if((c>="0"&&c<="9")||(c==="-"&&/[0-9]/.test(expr[i+1]||""))){var num=c;i++;while(i<n&&/[0-9.]/.test(expr[i]))num+=expr[i++];t.push(["n",parseFloat(num)]);continue;}
+    if(/[a-zA-Z_]/.test(c)){var w="";while(i<n&&/[a-zA-Z_]/.test(expr[i]))w+=expr[i++];if(w==="true")t.push(["v",true]);else if(w==="false")t.push(["v",false]);else if(w==="null")t.push(["v",null]);else throw 0;continue;}
+    var two=expr.substr(i,2);
+    if(["==","!=","<=",">=","&&","||"].indexOf(two)>=0){t.push(["o",two]);i+=2;continue;}
+    if(c==="<"||c===">"||c==="!"){t.push(["o",c]);i++;continue;}
+    if(c==="("){t.push(["("]);i++;continue;}
+    if(c===")"){t.push([")"]);i++;continue;}
+    throw 0;
+  }
+  var p=0;
+  function pk(){return t[p];}
+  function or(){var a=and();while(pk()&&pk()[0]==="o"&&pk()[1]==="||"){p++;var b=and();a=a||b;}return a;}
+  function and(){var a=cmp();while(pk()&&pk()[0]==="o"&&pk()[1]==="&&"){p++;var b=cmp();a=a&&b;}return a;}
+  function cmp(){var a=un();if(pk()&&pk()[0]==="o"&&["==","!=","<",">","<=",">="].indexOf(pk()[1])>=0){var op=t[p++][1],b=un();switch(op){case"==":return a==b;case"!=":return a!=b;case"<":return a<b;case">":return a>b;case"<=":return a<=b;case">=":return a>=b;}}return a;}
+  function un(){if(pk()&&pk()[0]==="o"&&pk()[1]==="!"){p++;return !un();}return prim();}
+  function prim(){var k=pk();if(!k)throw 0;if(k[0]==="("){p++;var e=or();if(!pk()||pk()[0]!==")")throw 0;p++;return e;}if(k[0]==="s"||k[0]==="n"||k[0]==="v"){p++;return k[1];}throw 0;}
+  var r=or();if(p!==t.length)throw 0;return !!r;
+}
+function evalCond(expr){try{var e=expr.replace(/\$\{(form|data)\.([^}]+)\}/g,function(_,k,n){var val=k==="form"?state.form[n]:state.data[n];if(Array.isArray(val))return JSON.stringify(val);return JSON.stringify(val==null?"":String(val));});return safeCond(e);}catch(e){return false;}}
 function activeParts(scr){var out={content:[],footer:null};function walk(list){(list||[]).forEach(function(c){if(!c||typeof c!=="object")return;if(c.type==="Footer"){out.footer=c;return;}if(c.type==="If"){walk(evalCond(c.condition)?c.then:(c["else"]||[]));return;}if(c.type==="Switch"){var v=resolveRef(c.value),cs=c.cases||{};walk(cs[v]!=null?cs[v]:(cs["default"]||[]));return;}out.content.push(c);});}walk(formChildren(scr));return out;}
 function isFilled(c){var v=state.form[c.name];if(c.type==="CheckboxGroup"||c.type==="ChipsSelector"){var mn=c["min-selected-items"]||1;return Array.isArray(v)&&v.length>=mn;}if(c.type==="OptIn")return v===true;if(c.type==="CalendarPicker"&&c.mode==="range")return !!(v&&v["start-date"]&&v["end-date"]);return v!=null&&v!=="";}
-function validField(c){if(c.type!=="TextInput")return true;var v=state.form[c.name];if(v==null||v==="")return true;if(c.pattern){try{if(!new RegExp("^(?:"+c.pattern+")$").test(v))return false;}catch(e){}}if(c["min-chars"]&&v.length<c["min-chars"])return false;return true;}
+var _reCache={};
+function validField(c){if(c.type!=="TextInput")return true;var v=state.form[c.name];if(v==null||v==="")return true;
+  if(c.pattern&&v.length<=512){var re=_reCache[c.pattern];if(re===undefined){try{re=new RegExp("^(?:"+c.pattern+")$");}catch(e){re=null;}_reCache[c.pattern]=re;}if(re&&!re.test(v))return false;}
+  if(c["min-chars"]&&v.length<c["min-chars"])return false;return true;}
 function requiredOK(parts){return parts.content.every(function(c){if(["TextInput","TextArea","Dropdown","RadioButtonsGroup","CheckboxGroup","ChipsSelector","DatePicker","CalendarPicker","OptIn"].indexOf(c.type)<0)return true;if(!validField(c))return false;if(c.required===false)return true;return isFilled(c);});}
 
 function renderPreview(){
@@ -1038,7 +1067,7 @@ async function aiCall(userText){
   var p=AI.cfg.provider||"gemini",key=(AI.cfg.key||"").trim(),model=(AI.cfg.model||PROV[p]).trim();
   if(!key)throw new Error("Falta la API key.");
   var sys=SYSTEM_PROMPT+"\n\nFLOW JSON ACTUAL:\n"+JSON.stringify(state.flow||{version:"7.3",screens:[]});
-  var hist=AI.msgs.map(function(m){return{role:m.role,text:m.text};});hist.push({role:"user",text:userText});
+  var hist=AI.msgs.slice(-12).map(function(m){return{role:m.role,text:m.text};});hist.push({role:"user",text:userText});
   if(p==="claude")return aiClaude(key,model,sys,hist);
   if(p==="gemini")return aiGemini(key,model,sys,hist);
   return aiOpenAILike(p,key,model,sys,hist);
