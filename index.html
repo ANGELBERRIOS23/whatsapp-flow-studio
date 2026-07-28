@@ -64,6 +64,13 @@
   .tpl-ic{width:40px;height:40px;border-radius:11px;background:var(--tint);color:var(--brand);display:grid;place-items:center;margin-bottom:4px}
   .tpl-ic svg{width:20px;height:20px}
   .tpl-card b{font-size:14px;color:var(--ink)} .tpl-d{font-size:12px;color:var(--muted);line-height:1.35}
+  .maptbl{width:100%;border-collapse:collapse;font-size:12.5px}
+  .maptbl th{text-align:left;color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;padding:6px 8px;border-bottom:1px solid var(--line)}
+  .maptbl td{padding:8px;border-bottom:1px solid var(--line2);color:var(--ink);vertical-align:top}
+  .maptbl code{font-family:var(--mono);font-size:11.5px;color:var(--brand-d);background:var(--tint);padding:2px 6px;border-radius:5px;word-break:break-all}
+  .imgzone{border:2px dashed var(--line);border-radius:11px;padding:14px;text-align:center;cursor:pointer;color:var(--muted);font-size:12px;transition:var(--trans);display:grid;place-items:center;min-height:64px}
+  .imgzone:hover,.imgzone.drag{border-color:var(--brand2);background:var(--tint2)}
+  .imgzone small{opacity:.7} .imgzone img{max-height:90px;max-width:100%;border-radius:8px}
   .status{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 12px;border-radius:20px;
     font-size:12.5px;font-weight:650}
   .status.ok{background:var(--tint);color:#0b7a4f}
@@ -100,10 +107,11 @@
   .b-top{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
   .b-top .hint{font-size:12px;color:var(--muted)}
   .toggle{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink2);font-weight:600;cursor:pointer}
-  .switch{width:38px;height:22px;border-radius:12px;background:#cfd8dc;position:relative;transition:.15s;flex:0 0 auto}
+  .switch{width:40px;height:23px;border-radius:12px;background:var(--line);border:1px solid transparent;position:relative;transition:var(--trans);flex:0 0 auto}
+  :root[data-app-theme="dark"] .switch{background:#38474e}
   .switch.on{background:var(--brand)}
-  .switch::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--card);transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
-  .switch.on::after{left:18px}
+  .switch::after{content:"";position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;background:#fff;transition:var(--trans);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .switch.on::after{left:20px}
   .screencard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:14px;box-shadow:var(--shadow);overflow:hidden}
   .sc-head{display:flex;align-items:center;gap:8px;padding:12px 14px;background:var(--tint);border-bottom:1px solid var(--line2)}
   .sc-head .num{width:24px;height:24px;border-radius:7px;background:var(--brand);color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center;flex:0 0 auto}
@@ -155,13 +163,16 @@
   .seg button{border:0;background:transparent;padding:7px 13px;border-radius:8px;font-size:12.5px;font-weight:650;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:7px;transition:.15s}
   .seg button svg{width:15px;height:15px}
   .seg button.active{background:linear-gradient(135deg,var(--brand2),var(--brand));color:#fff;box-shadow:0 2px 8px rgba(0,128,105,.3)}
-  .seg.plain button.active{background:var(--ink);box-shadow:none}
+  .seg.plain button.active{background:#31424b;color:#fff;box-shadow:none}
+  :root[data-app-theme="dark"] .seg.plain button.active{background:#e7edef;color:#0b141a}
   .selpill{height:36px;border:1px solid var(--line);border-radius:10px;background:var(--card);padding:0 10px;font-size:12.5px;font-weight:600;color:var(--ink2);box-shadow:var(--shadow)}
 
   .stage{flex:1;display:flex;align-items:center;justify-content:center;padding:12px 20px 26px;min-height:0}
   .phone{width:392px;max-width:94vw;height:812px;max-height:calc(100vh - 210px);
     border-radius:44px;background:linear-gradient(160deg,#1c1c1e,#000);padding:11px;box-shadow:0 30px 70px rgba(0,0,0,.4),0 0 0 2px #2a2a2c;position:relative}
-  .phone::before{content:"";position:absolute;top:16px;left:50%;transform:translateX(-50%);width:120px;height:26px;background:#000;border-radius:16px;z-index:5}
+  .phone::before{content:"";position:absolute;top:19px;left:50%;transform:translateX(-50%);background:#000;z-index:6;pointer-events:none;transition:var(--trans)}
+  .phone:has([data-platform="ios"])::before{width:98px;height:27px;border-radius:16px}
+  .phone:has([data-platform="android"])::before{width:11px;height:11px;border-radius:50%;top:21px}
   .screen{width:100%;height:100%;border-radius:34px;overflow:hidden;display:flex;flex-direction:column;position:relative;background:var(--w-bg);color:var(--w-text);font-family:var(--w-font)}
   .screen[data-theme=light]{--w-bg:#fff;--w-text:#111b21;--w-text2:#667781;--w-header:#fff;--w-border:#d6dee2;--w-div:#eceff1;--w-field:#fff;--w-acc:#008069;--w-acc-t:#fff;--w-off-bg:#f0f2f5;--w-off-t:#aab4ba;--w-sheet:#fff;--w-status:#fff}
   .screen[data-theme=dark]{--w-bg:#0b141a;--w-text:#e9edef;--w-text2:#8696a0;--w-header:#1f2c33;--w-border:#2a3942;--w-div:#182229;--w-field:#0b141a;--w-acc:#00a884;--w-acc-t:#08120f;--w-off-bg:#202c33;--w-off-t:#55636b;--w-sheet:#233138;--w-status:#1f2c33}
@@ -317,6 +328,8 @@
       <span>WhatsApp Flow Studio<small>Editor · Constructor · Vista previa</small></span>
     </div>
     <span class="spacer"></span>
+    <button class="tbtn ghost iconly" id="undoBtn" title="Deshacer (Ctrl+Z)"><span data-i="undo"></span></button>
+    <button class="tbtn ghost iconly" id="redoBtn" title="Rehacer (Ctrl+Shift+Z)"><span data-i="redo"></span></button>
     <button class="tbtn ghost iconly" id="appTheme" title="Cambiar tema de la app (claro/oscuro)"><span data-i="moon"></span></button>
     <span class="status ok" id="status"><span class="dot"></span><span id="statusT">Listo</span></span>
     <button class="tbtn" id="newBtn"><span data-i="file"></span>Nuevo</button>
@@ -347,6 +360,7 @@
             <button class="mini" id="fmtBtn"><span data-i="wand"></span>Formatear</button>
             <button class="mini" id="copyBtn"><span data-i="copy"></span>Copiar</button>
             <button class="mini" id="toBuilderBtn"><span data-i="blocks"></span>Importar al constructor</button>
+            <button class="mini" id="mapBtn"><span data-i="list"></span>Mapa de datos</button>
           </div>
           <textarea id="code" spellcheck="false" placeholder="Pega o edita el Flow JSON aquí…"></textarea>
           <div class="valbar" id="valbar"></div>
@@ -425,6 +439,15 @@
     </div>
   </div>
 
+  <!-- mapa de datos -->
+  <div class="modal" id="mapModal">
+    <div class="mcard">
+      <div class="mhead"><span data-i="list" style="color:var(--brand)"></span><h3>Mapa de datos · para tu webhook / n8n</h3><span class="x" id="mapX" data-i="x"></span></div>
+      <div class="mbody"><div id="mapBody"></div></div>
+      <div class="mfoot"><button class="tbtn ghost" id="mapCopy"><span data-i="copy"></span>Copiar claves</button><button class="tbtn primary" id="mapCsv"><span data-i="download"></span>Descargar CSV</button></div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
 <script id="flowData" type="application/json">null</script>
@@ -458,6 +481,8 @@ var ICONS={
   copy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>',
   wand:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M15 4V2M15 10V8M11 6H9M21 6h-2M18.7 3.3l-1.4 1.4M18.7 8.7l-1.4-1.4M4 20l9-9"/></svg>',
   reset:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></svg>',
+  undo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg>',
+  redo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h3"/></svg>',
   x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
   dots:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg>',
   chev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>',
@@ -651,6 +676,8 @@ function toast(m,err){var t=$("#toast");t.textContent=m;t.className="toast"+(err
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(m){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m];});}
 function screenById(id){return (state.flow&&state.flow.screens||[]).find(function(s){return s.id===id;});}
 function imgSrc(src){if(!src||typeof src!=="string")return "";if(/^data:image\//i.test(src))return src;if(src.indexOf("data:")===0)return "";/* rechaza data: que no sea imagen */var mime=src.indexOf("/9j/")===0?"image/jpeg":"image/png";return "data:"+mime+";base64,"+src;}
+// archivo -> base64 CRUDO (sin prefijo data:, como lo quiere Meta), reescalado
+function fileToImage(file,cb){if(!file||!/^image\//.test(file.type)){toast("Selecciona una imagen",true);return;}var rd=new FileReader();rd.onload=function(){var img=new Image();img.onload=function(){var mx=900,w=img.width,h=img.height;if(w>mx){h=Math.round(h*mx/w);w=mx;}var cv=document.createElement("canvas");cv.width=w;cv.height=h;cv.getContext("2d").drawImage(img,0,0,w,h);var out;try{out=cv.toDataURL("image/jpeg",0.82);}catch(e){out=rd.result;}cb(out.replace(/^data:[^,]+,/,""));};img.onerror=function(){cb(String(rd.result).replace(/^data:[^,]+,/,""));};img.src=rd.result;};rd.readAsDataURL(file);}
 function resolveRef(v){if(typeof v!=="string")return v;var m=v.match(/^\$\{(form|data)\.([^}]+)\}$/);if(!m)return v;return m[1]==="form"?state.form[m[2]]:state.data[m[2]];}
 /* Evaluador SEGURO de condiciones (sin eval/new Function): solo literales y
    los operadores == != < > <= >= && || ! y paréntesis. Evita ejecución de código
@@ -841,9 +868,17 @@ function typeMeta(k){return BLOCK_TYPES.find(function(t){return t.k===k;})||{lab
 
 function importToBuilder(flow){var sp=flowToSpec(flow);state.spec=sp;state.qas=sp.question_as_subheading!==false;$("#qasSwitch").className="switch"+(state.qas?" on":"");state.bScreen=0;renderBuilder();
   /* NO se re-genera al cargar: el flow queda EXACTO (conserva names/keys de datos). Al editar en el constructor se regenera preservando esas keys. */
-  if(sp._advanced)toast("Este flow tiene saltos/lógica: edítalo con cuidado (o en la pestaña JSON).");}
+  if(sp._advanced)toast("Este flow tiene saltos/lógica: edítalo con cuidado (o en la pestaña JSON).");resetUndo();}
+var undoStack=[],redoStack=[],lastSnap=null;
+function updUndo(){var u=$("#undoBtn"),r=$("#redoBtn");if(u){u.disabled=!undoStack.length;u.style.opacity=undoStack.length?"":".35";}if(r){r.disabled=!redoStack.length;r.style.opacity=redoStack.length?"":".35";}}
+function snapCommit(){if(!state.spec)return;var cur=JSON.stringify(state.spec);if(lastSnap!==null&&cur!==lastSnap){undoStack.push(lastSnap);if(undoStack.length>80)undoStack.shift();redoStack=[];}lastSnap=cur;updUndo();}
+function resetUndo(){undoStack=[];redoStack=[];lastSnap=state.spec?JSON.stringify(state.spec):null;updUndo();}
+function applySnap(s){state.spec=JSON.parse(s);lastSnap=s;if(state.bScreen>=state.spec.screens.length)state.bScreen=Math.max(0,state.spec.screens.length-1);renderBuilder();try{setFlow(buildFlow(state.spec));}catch(e){}updUndo();}
+function doUndo(){if(!undoStack.length)return;redoStack.push(JSON.stringify(state.spec));applySnap(undoStack.pop());}
+function doRedo(){if(!redoStack.length)return;undoStack.push(JSON.stringify(state.spec));applySnap(redoStack.pop());}
 function regen(){ // spec -> flow -> preview + code
   if(state.spec&&state.spec._advanced){toast("Flow con lógica avanzada: edítalo en «Editor JSON» o con el Asistente IA para no perder los saltos.");return;}
+  snapCommit();
   try{ensureIds();state.spec.question_as_subheading=state.qas;var flow=buildFlow(state.spec);setFlow(flow);}catch(e){toast("Error al generar: "+e.message,true);}
 }
 var regenTimer;function regenSoon(){clearTimeout(regenTimer);regenTimer=setTimeout(regen,250);}
@@ -880,6 +915,7 @@ function renderBuilder(){
   var acts=document.createElement("div");acts.className="acts";
   acts.appendChild(iconBtn("up",si>0,function(){move(state.spec.screens,si,-1);state.bScreen=si-1;renderBuilder();regen();}));
   acts.appendChild(iconBtn("down",si<state.spec.screens.length-1,function(){move(state.spec.screens,si,1);state.bScreen=si+1;renderBuilder();regen();}));
+  acts.appendChild(iconBtn("copy",true,function(){state.spec.screens.splice(si+1,0,dupScreen(scr));state.bScreen=si+1;renderBuilder();regen();},"Duplicar pantalla"));
   acts.appendChild(iconBtn("trash",state.spec.screens.length>1,function(){state.spec.screens.splice(si,1);state.bScreen=Math.max(0,si-1);renderBuilder();regen();}));
   head.appendChild(acts);card.appendChild(head);
   var bodyEl=document.createElement("div");bodyEl.className="sc-body";
@@ -909,7 +945,8 @@ function renderBlock(scr,si,b,bi){
   var acts=document.createElement("div");acts.className="acts";
   acts.appendChild(iconBtn("up",bi>0,function(){move(scr.blocks,bi,-1);renderBuilder();regen();}));
   acts.appendChild(iconBtn("down",bi<scr.blocks.length-1,function(){move(scr.blocks,bi,1);renderBuilder();regen();}));
-  acts.appendChild(iconBtn("trash",true,function(){scr.blocks.splice(bi,1);renderBuilder();regen();}));
+  acts.appendChild(iconBtn("copy",true,function(){scr.blocks.splice(bi+1,0,dupBlock(b));renderBuilder();regen();},"Duplicar elemento"));
+  acts.appendChild(iconBtn("trash",true,function(){scr.blocks.splice(bi,1);renderBuilder();regen();},"Eliminar"));
   bh.appendChild(acts);el.appendChild(bh);
   var body=document.createElement("div");
   if(["heading","subheading","body","caption"].indexOf(k)>=0){
@@ -918,7 +955,17 @@ function renderBlock(scr,si,b,bi){
     var p=document.createElement("div");p.style.cssText="font-size:12px;color:var(--muted)";p.textContent="Línea separadora fina.";body.appendChild(p);
   } else if(k==="image"){
     var g=document.createElement("div");g.className="fgrid";
-    g.appendChild(fText("Base64 o data URI",b.image||"",true,function(v){b.image=v;regenSoon();},true));
+    var wrap=document.createElement("div");wrap.className="f full";wrap.innerHTML="<label>Imagen</label>";
+    var dz=document.createElement("div");dz.className="imgzone";dz.innerHTML=b.image?'<img src="'+esc(imgSrc(b.image))+'" alt="">':'<span>Arrastra una imagen o haz clic para subir<br><small>se reescala automáticamente</small></span>';
+    var fi=document.createElement("input");fi.type="file";fi.accept="image/*";fi.style.display="none";
+    function take(f){if(f)fileToImage(f,function(raw){b.image=raw;renderBuilder();regen();});}
+    dz.onclick=function(){fi.click();};fi.onchange=function(){take(fi.files[0]);};
+    dz.addEventListener("dragover",function(e){e.preventDefault();dz.classList.add("drag");});
+    dz.addEventListener("dragleave",function(){dz.classList.remove("drag");});
+    dz.addEventListener("drop",function(e){e.preventDefault();dz.classList.remove("drag");take(e.dataTransfer.files[0]);});
+    wrap.appendChild(dz);wrap.appendChild(fi);
+    if(b.image){var rm=document.createElement("button");rm.className="addopt";rm.style.marginTop="6px";rm.textContent="Quitar imagen";rm.onclick=function(){b.image="";renderBuilder();regen();};wrap.appendChild(rm);}
+    g.appendChild(wrap);
     g.appendChild(fText("Alto (px)",String(b.height||300),false,function(v){b.height=parseInt(v)||300;regenSoon();}));
     body.appendChild(g);
   } else if(k==="optin"){
@@ -1015,8 +1062,10 @@ function fGate(b){
   gsel.onchange=function(){if(b.gate){b.gate.goto=gsel.value;regenSoon();}};
   box.appendChild(row);return box;
 }
-function iconBtn(icon,enabled,on){var b=document.createElement("button");b.className="iconbtn";b.innerHTML=svg(icon);b.disabled=!enabled;b.style.opacity=enabled?"":".3";if(enabled)b.onclick=on;return b;}
+function iconBtn(icon,enabled,on,title){var b=document.createElement("button");b.className="iconbtn";b.innerHTML=svg(icon);b.disabled=!enabled;b.style.opacity=enabled?"":".3";if(title)b.title=title;if(enabled)b.onclick=on;return b;}
 function move(arr,i,dir){var j=i+dir;if(j<0||j>=arr.length)return;var t=arr[i];arr[i]=arr[j];arr[j]=t;}
+function dupBlock(b){var c=JSON.parse(JSON.stringify(b));delete c._name;delete c._pkey;return c;}
+function dupScreen(s){var c=JSON.parse(JSON.stringify(s));delete c.id;(c.blocks||[]).forEach(function(b){delete b._name;delete b._pkey;});return c;}
 
 /* palette */
 var paletteTarget=null;
@@ -1047,6 +1096,8 @@ $("#screenSel").addEventListener("change",function(){state.screenId=this.value;r
 $("#resetBtn").onclick=resetSim;$("#closeIc").onclick=back;
 function setAppTheme(t){document.documentElement.setAttribute("data-app-theme",t);try{localStorage.setItem("wfs_theme",t);}catch(e){}var el=$("#appTheme");if(el)el.innerHTML=svg(t==="dark"?"sun":"moon");}
 $("#appTheme").onclick=function(){setAppTheme(document.documentElement.getAttribute("data-app-theme")==="dark"?"light":"dark");};
+$("#undoBtn").onclick=doUndo;$("#redoBtn").onclick=doRedo;
+document.addEventListener("keydown",function(e){if(!(e.metaKey||e.ctrlKey))return;var id=(e.target&&e.target.id)||"";if(id==="code"||id==="aiInput"||id==="paste")return;var k=e.key.toLowerCase();if(k==="z"){e.preventDefault();e.shiftKey?doRedo():doUndo();}else if(k==="y"){e.preventDefault();doRedo();}});
 $("#newBtn").onclick=function(){openTemplates();};
 $("#downloadBtn").onclick=function(){if(!state.flow)return;var blob=new Blob([JSON.stringify(state.flow,null,2)],{type:"application/json"});var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="flow.json";a.click();toast("Descargado flow.json");};
 // modal
@@ -1072,11 +1123,27 @@ var TEMPLATES=[
    {text:"Tu nombre",label:"Nombre completo",key:"nombre"},
    {dropdown:"Motivo de la cita",label:"Selecciona",key:"motivo",options:["Consulta","Seguimiento","Cotización","Otro"]},
    {calendar:"Fechas de tu estadía",label:"Selecciona",key:"fechas",mode:"range","min-days":1},
-   {optin:"Confirmo la reserva",key:"confirma"}]}]};}}
+   {optin:"Confirmo la reserva",key:"confirma"}]}]};}},
+ {name:"Soporte / ticket",icon:"optin",desc:"Asunto, urgencia y descripción",spec:function(){return{version:"7.3",question_as_subheading:false,screens:[{title:"Abrir ticket",footer:"Enviar",blocks:[
+   {subheading:"📌 Asunto"},{dropdown:"Selecciona",key:"asunto",options:["Problema técnico","Facturación","Cuenta","Sugerencia","Otro"]},
+   {subheading:"⚡ Urgencia"},{radio:"Selecciona",key:"urgencia",options:["Baja","Media","Alta"]},
+   {subheading:"📝 Describe tu caso"},{textarea:"Cuéntanos qué pasó",key:"descripcion"},
+   {text:"Correo para responderte",label:"correo@dominio.com",key:"correo"}]}]};}},
+ {name:"Reseña / feedback",icon:"radio",desc:"Calificación + qué mejorar",spec:function(){return{version:"7.3",question_as_subheading:false,screens:[{title:"Tu reseña",footer:"Enviar",blocks:[
+   {subheading:"⭐ ¿Cómo calificarías tu experiencia?"},{radio:"Selecciona",key:"calificacion",options:["Excelente","Buena","Regular","Mala"]},
+   {subheading:"🔧 ¿Qué podríamos mejorar? (elige las que apliquen)"},{chips:"Selecciona",key:"mejoras",options:["Atención","Precio","Rapidez","Calidad","Comunicación"]},
+   {subheading:"💬 Comentario (opcional)"},{textarea:"Escribe aquí",key:"comentario",required:false}]}]};}}
 ];
-function openTemplates(){var g=$("#tplGrid");g.innerHTML="";TEMPLATES.forEach(function(t){var c=document.createElement("div");c.className="tpl-card";c.innerHTML='<span class="tpl-ic">'+svg(t.icon)+'</span><b>'+esc(t.name)+'</b><span class="tpl-d">'+esc(t.desc)+'</span>';c.onclick=function(){state.spec=t.spec();state.qas=state.spec.question_as_subheading!==false;$("#qasSwitch").className="switch"+(state.qas?" on":"");state.bScreen=0;$("#tplModal").classList.remove("show");renderBuilder();switchTab("build");regen();};g.appendChild(c);});$("#tplModal").classList.add("show");}
+function openTemplates(){var g=$("#tplGrid");g.innerHTML="";TEMPLATES.forEach(function(t){var c=document.createElement("div");c.className="tpl-card";c.innerHTML='<span class="tpl-ic">'+svg(t.icon)+'</span><b>'+esc(t.name)+'</b><span class="tpl-d">'+esc(t.desc)+'</span>';c.onclick=function(){state.spec=t.spec();state.qas=state.spec.question_as_subheading!==false;$("#qasSwitch").className="switch"+(state.qas?" on":"");state.bScreen=0;$("#tplModal").classList.remove("show");renderBuilder();switchTab("build");regen();resetUndo();};g.appendChild(c);});$("#tplModal").classList.add("show");}
 $("#tplX").onclick=function(){$("#tplModal").classList.remove("show");};
 $("#tplModal").addEventListener("click",function(e){if(e.target===$("#tplModal"))$("#tplModal").classList.remove("show");});
+// ── mapa de datos (claves que recibe el webhook) ──
+function dataMap(){var rows=[];(state.flow&&state.flow.screens||[]).forEach(function(scr,si){var pm=payloadMap(scr);formChildren(scr).forEach(function(c){if(!c||!c.name)return;rows.push({screen:si+1,label:c.label||c.text||c.name,key:pm[c.name]||"(no enviado)",type:c.type});});});return rows;}
+function openMap(){var rows=dataMap(),h;if(!rows.length)h='<div class="empty">Aún no hay campos.</div>';else{h='<table class="maptbl"><thead><tr><th>#</th><th>Campo</th><th>Clave que recibe tu webhook</th></tr></thead><tbody>';rows.forEach(function(r){h+='<tr><td>'+r.screen+'</td><td>'+esc(r.label)+'</td><td><code>'+esc(r.key)+'</code></td></tr>';});h+='</tbody></table>';}$("#mapBody").innerHTML=h;$("#mapModal").classList.add("show");}
+$("#mapBtn").onclick=openMap;$("#mapX").onclick=function(){$("#mapModal").classList.remove("show");};
+$("#mapModal").addEventListener("click",function(e){if(e.target===$("#mapModal"))$("#mapModal").classList.remove("show");});
+$("#mapCopy").onclick=function(){var t=dataMap().map(function(r){return r.key+"\t"+r.label;}).join("\n");if(navigator.clipboard)navigator.clipboard.writeText(t);toast("Claves copiadas");};
+$("#mapCsv").onclick=function(){var csv="pantalla,campo,clave\n"+dataMap().map(function(r){return r.screen+',"'+String(r.label).replace(/"/g,'""')+'","'+r.key+'"';}).join("\n");var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="mapa-datos.csv";a.click();};
 $("#drop").onclick=function(){$("#file").click();};
 $("#file").addEventListener("change",function(e){var f=e.target.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){$("#paste").value=rd.result;};rd.readAsText(f);});
 ["dragover","dragenter"].forEach(function(ev){$("#drop").addEventListener(ev,function(e){e.preventDefault();$("#drop").classList.add("drag");});});
@@ -1193,13 +1260,16 @@ $("#aiInput").addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shif
 (function init(){
   var p=new URLSearchParams(location.search);
   var savedT;try{savedT=localStorage.getItem("wfs_theme");}catch(e){}
-  setAppTheme(p.get("app")||savedT||(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));
+  var appTheme=p.get("app")||savedT||(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
+  setAppTheme(appTheme);
+  var phoneTheme=p.get("theme")||appTheme; // el preview arranca igual que la app
+  if(phoneTheme==="dark"){state.theme="dark";seg("#theme",$('#theme [data-v=dark]'));}
   if(p.get("platform")==="ios"){state.platform="ios";seg("#platform",$('#platform [data-v=ios]'));}
-  if(p.get("theme")==="dark"){state.theme="dark";seg("#theme",$('#theme [data-v=dark]'));}
   var raw=$("#flowData")?$("#flowData").textContent.trim():"null";
   var loaded=null;try{loaded=JSON.parse(raw);}catch(e){}
   if(loaded&&loaded.screens){setFlow(loaded);importToBuilder(loaded);}
   else{state.spec=newSpec();renderBuilder();regen();}
+  resetUndo();
   aiInitCfg();
   aiBubble("sys","Elige proveedor + API key arriba y pídeme cambios. Conozco las reglas de WhatsApp Flows y valido antes de aplicar.");
 })();
