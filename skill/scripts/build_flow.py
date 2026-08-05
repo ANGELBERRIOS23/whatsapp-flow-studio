@@ -351,7 +351,19 @@ def build(spec):
     version = spec.get("version", "7.3")
     q_as_sub = spec.get("question_as_subheading", True)
     in_screens = spec.get("screens", [])
-    terms_in = spec.get("terms_screens", [])
+    terms_in = list(spec.get("terms_screens", []))
+
+    # OptIn con termsText -> pantalla de términos DEDICADA (hija, sin footer, al final)
+    _tc = 0
+    for s in in_screens:
+        for b in s.get("blocks", []):
+            if isinstance(b, dict) and "optin" in b and b.get("termsText"):
+                tid = "TERMINOS" + ("" if _tc == 0 else "_" + chr(96 + _tc))
+                _tc += 1
+                terms_in.append({"id": tid,
+                                 "title": b.get("termsTitle", "Términos y condiciones"),
+                                 "blocks": [{"body": b["termsText"]}]})
+                b["terms"] = tid
 
     # ── ids de pantalla válidos (solo letras/_) + remapeo de referencias ──
     used_ids, id_map = set(), {}

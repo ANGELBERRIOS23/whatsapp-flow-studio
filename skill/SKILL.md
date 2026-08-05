@@ -175,6 +175,10 @@ Reglas del formato:
 - `optin.terms` apunta al `id` de una pantalla en `terms_screens` → genera el
   "Read more". Esas pantallas van **al final** automáticamente (regla obligatoria,
   ver gotchas).
+- **Atajo solo-texto:** `optin.termsText` (+ opcional `termsTitle`) crea sola la
+  pantalla-hija de términos (sin Footer, al final) y la enlaza — no hace falta
+  escribir `terms_screens`. Para términos con imagen/encabezados usa la forma
+  explícita `terms` + `terms_screens`.
 
 ### Saltos de lógica (gates) — navegación condicional sin servidor
 

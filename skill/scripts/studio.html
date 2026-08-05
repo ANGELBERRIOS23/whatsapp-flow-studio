@@ -580,6 +580,8 @@ function buildFlow(spec){
   var version=spec.version||"7.3",qas=spec.question_as_subheading!==false;
   var inScreens=(spec.screens||[]).map(function(s){return JSON.parse(JSON.stringify(s));});
   var termsIn=(spec.terms_screens||[]).map(function(s){return JSON.parse(JSON.stringify(s));});
+  // OptIn con termsText -> pantalla de términos DEDICADA (hija, sin footer, va al final)
+  var _tc=0;inScreens.forEach(function(s){(s.blocks||[]).forEach(function(b){if(b&&("optin" in b)&&b.termsText){var tid="TERMINOS"+(_tc?("_"+String.fromCharCode(96+_tc)):"");_tc++;termsIn.push({id:tid,title:b.termsTitle||"Términos y condiciones",blocks:[{body:b.termsText}]});b.terms=tid;}});});
   var used={},idMap={};
   inScreens.forEach(function(s,i){var orig=s.id||(i===0?"QUESTION_ONE":null);var fid=safeScreenId(orig,used,"scr|"+i+"|"+(s.title||""));if(s.id)idMap[s.id]=fid;s.id=fid;});
   termsIn.forEach(function(ts,j){var orig=ts.id;var fid=safeScreenId(orig,used,"terms|"+j);if(orig)idMap[orig]=fid;ts.id=fid;});
@@ -653,6 +655,22 @@ function flowToSpec(flow){
     });
     spec.screens.push(s);
   });
+  // Pantallas HIJA de términos (destino de un OptIn "Leer más", sin footer):
+  // solo-texto -> se colapsan en b.termsText; con imagen -> se preservan en terms_screens.
+  var _rm={};spec.terms_screens=spec.terms_screens||[];
+  spec.screens.forEach(function(s){(s.blocks||[]).forEach(function(b){
+    if(b&&("optin" in b)&&b.terms){
+      var tgt=spec.screens.filter(function(x){return x.id===b.terms;})[0];
+      if(tgt&&!tgt.footer){
+        var hasImg=(tgt.blocks||[]).some(function(tb){return ("image" in tb);});
+        if(hasImg){spec.terms_screens.push(tgt);}
+        else{var txt=(tgt.blocks||[]).map(function(tb){return tb.heading||tb.subheading||tb.body||tb.caption||"";}).filter(Boolean).join("\n\n");if(txt)b.termsText=txt;delete b.terms;}
+        _rm[tgt.id]=1;
+      }
+    }
+  });});
+  spec.screens=spec.screens.filter(function(s){return !_rm[s.id];});
+  if(!spec.terms_screens.length)delete spec.terms_screens;
   spec._advanced=advanced;
   return spec;
 }
@@ -971,7 +989,7 @@ function renderBlock(scr,si,b,bi){
   } else if(k==="optin"){
     var g=document.createElement("div");g.className="fgrid";
     g.appendChild(fText("Texto del consentimiento",b.optin||"",true,function(v){b.optin=v;regenSoon();},true,LIM.optin));
-    g.appendChild(fScreenSelect("Pantalla de términos (opcional)",b.terms||"",function(v){b.terms=v;regenSoon();},true,scr.id));
+    g.appendChild(fText("Términos y condiciones — se abren con «Leer más» (opcional)",b.termsText||"",true,function(v){b.termsText=v||undefined;if(v)delete b.terms;regenSoon();},true));
     body.appendChild(g);
     body.appendChild(fReq(b));
   } else if(k==="calendar"){

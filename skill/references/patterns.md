@@ -71,6 +71,21 @@ Label corto con `terms` → genera el "Read more" hacia una pantalla de solo tex
 callejón sin salida al que se entra con "Read more" y se sale con "atrás"). El
 builder la coloca al final automáticamente. Ver `gotchas.md` regla Flow19.
 
+**Atajo (solo texto):** en lugar de `terms` + `terms_screens`, puedes poner el
+texto directo en el propio OptIn con `termsText`. El builder crea solo la
+pantalla-hija (sin Footer, al final) y enlaza el "Read more":
+
+```json
+{"optin": "He leído y acepto los términos", "key": "acepto",
+ "termsText": "Texto legal largo…", "termsTitle": "Términos y condiciones"}
+```
+
+Úsalo cuando los términos sean **solo texto**. Si necesitas imagen o encabezados
+en la pantalla de términos, usa la forma explícita `terms` + `terms_screens` de
+arriba. (En el **Studio** el campo "Términos y condiciones" del OptIn es este
+`termsText`; ejemplos reales: **Flow15** «Términos y Condiciones», **Flow18**
+«Disclaimer», **Flow19** «Más información».)
+
 ## 6. Solo lectura / consentimiento antes de empezar
 
 Primera pantalla sin inputs, solo `TextBody` + Footer `navigate` (Flow2):
