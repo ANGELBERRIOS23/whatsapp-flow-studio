@@ -475,6 +475,56 @@ def validate(flow):
                        "es una pantalla 'read more' de OptIn (sin Footer) pero hay pantallas "
                        "normales después. Muévela al FINAL del array o el Flow puede dar error.")
 
+    # routing_model: cuando un salto (navigate) va DENTRO de un If, Meta NO lo infiere
+    # y rechaza la transición en runtime ("doesn't satisfy provided routing_model").
+    # Debe declararse en "routing_model" al nivel superior.
+    rm = flow.get("routing_model")
+
+    def _screen_nav(node, acc, in_if, gated):
+        if isinstance(node, dict):
+            a = node.get("on-click-action")
+            if isinstance(a, dict) and a.get("name") == "navigate":
+                nx = (a.get("next") or {}).get("name")
+                if nx:
+                    acc.add(nx)
+                    if in_if:
+                        gated.add(nx)
+            if node.get("type") == "If":
+                for br in ("then", "else"):
+                    _screen_nav(node.get(br), acc, True, gated)
+                return
+            for k, v in node.items():
+                if k not in ("then", "else"):
+                    _screen_nav(v, acc, in_if, gated)
+        elif isinstance(node, list):
+            for x in node:
+                _screen_nav(x, acc, in_if, gated)
+
+    for s in screens:
+        if not isinstance(s, dict):
+            continue
+        acc, gated = set(), set()
+        _screen_nav(s.get("layout"), acc, False, gated)
+        sid = s.get("id")
+        if not acc:
+            continue
+        if rm is None:
+            if gated:
+                r.err(f'pantalla "{sid}"',
+                      'navega DENTRO de un If (salto condicional) pero el Flow no tiene "routing_model". '
+                      'Meta NO infiere saltos dentro de un If y rechazará la transición en runtime '
+                      f'("Can\'t perform a transition..."). Agrega "routing_model" con "{sid}": {sorted(acc)}.')
+        else:
+            missing = acc - set(rm.get(sid, []))
+            if missing:
+                r.err(f'pantalla "{sid}"',
+                      f'routing_model no declara la(s) transición(es) {sorted(missing)} desde "{sid}"; '
+                      'Meta rechazará ese salto. Agrégala(s) a routing_model.')
+    if rm is not None:
+        for sid in rm:
+            if sid not in id_set:
+                r.warn("routing_model", f'declara la pantalla "{sid}" que no existe')
+
     # limpiar marcas temporales
     for s in screens:
         s.pop("_deadend", None)

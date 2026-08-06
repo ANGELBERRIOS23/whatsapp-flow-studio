@@ -557,7 +557,27 @@ def build(spec):
                        "children": [{"type": "Form", "name": "flow_path", "children": children}]},
         })
 
-    return {"version": version, "screens": screens_out}
+    # routing_model: transiciones permitidas. OBLIGATORIO cuando la navegación va
+    # dentro de un If (gate) — Meta no la infiere y rechaza el salto. Se emite siempre.
+    def _nav_targets(node, acc):
+        if isinstance(node, dict):
+            a = node.get("on-click-action")
+            if isinstance(a, dict) and a.get("name") == "navigate":
+                nx = (a.get("next") or {}).get("name")
+                if nx and nx not in acc:
+                    acc.append(nx)
+            for v in node.values():
+                _nav_targets(v, acc)
+        elif isinstance(node, list):
+            for x in node:
+                _nav_targets(x, acc)
+    routing = {}
+    for s in screens_out:
+        acc = []
+        _nav_targets(s.get("layout"), acc)
+        if acc:
+            routing[s["id"]] = acc
+    return {"version": version, "routing_model": routing, "screens": screens_out}
 
 
 def _find_footer(screen):

@@ -643,7 +643,11 @@ function buildFlow(spec){
   });
   if(!out.some(function(s){return s.terminal;})){var last=out[out.length-1];var foot=null;last.layout.children[0].children.forEach(function(c){if(c.type==="Footer")foot=c;});if(foot)foot["on-click-action"]={name:"complete",payload:(foot["on-click-action"]||{}).payload||{}};last.terminal=true;last.success=true;}
   termsIn.forEach(function(ts){var ch=[];(ts.blocks||[]).forEach(function(blk){var done=false;for(var key in TEXTBLOCK){if(key in blk){ch.push({type:TEXTBLOCK[key],text:blk[key]});done=true;break;}}if(done)return;if("divider" in blk)ch.push({type:"TextCaption",text:"────────────────────"});if("image" in blk)ch.push({type:"Image",src:blk.image,height:blk.height||300,"scale-type":"contain"});});out.push({id:ts.id,title:ts.title||"",data:{},layout:{type:"SingleColumnLayout",children:[{type:"Form",name:"flow_path",children:ch}]}});});
-  return {version:version,screens:out};
+  // routing_model: transiciones permitidas. OBLIGATORIO cuando la navegación va
+  // dentro de un If (gate) — Meta no la infiere y rechaza el salto ("doesn't satisfy
+  // provided routing_model"). Lo emitimos siempre a partir de los navigate reales.
+  var routing={};out.forEach(function(s){var tg=[];(function w(list){(list||[]).forEach(function(c){if(!c||typeof c!=="object")return;var a=c["on-click-action"];if(a&&a.name==="navigate"&&a.next&&a.next.name&&tg.indexOf(a.next.name)<0)tg.push(a.next.name);if(c.type==="If"){w(c.then);w(c["else"]);}if(c.type==="Form"||c.type==="Switch")w(c.children);if(c.type==="Switch"){var cs=c.cases||{};Object.keys(cs).forEach(function(k){w(cs[k]);});}});})((s.layout&&s.layout.children)||[]);if(tg.length)routing[s.id]=tg;});
+  return {version:version,routing_model:routing,screens:out};
 }
 
 /* ============================================================
@@ -1275,6 +1279,7 @@ var SYSTEM_PROMPT=[
 "- Los emojis se permiten en TODO menos en el label del Footer.",
 "- Saltos condicionales sin servidor: componente If {condition:\"${form.NAME} == 'ID_OPCION'\", then:[Footer→pantalla A], else:[Footer→pantalla B]} — el Footer debe estar en AMBAS ramas, y todo camino que llega a una pantalla debe enviarle en el payload TODOS los campos que ella declara en data (los aún no recogidos, vacíos).",
 "- Mostrar un campo/grupo según una respuesta (sin servidor): envuélvelo en un If {condition:\"${form.NAME} == 'ID'\", then:[componentes]} (soporta ==,!=,&&,||,!,<,>,<=,>=; máx 3 niveles anidados; If dentro de If debe estar en ambas ramas). REGLA CRÍTICA de Meta: un componente que se muestra condicionalmente (dentro de un If) NO puede ser required:true — la validación FALLA. Déjalo required:false u omite required. Sirve para el patrón 'si elige Otro, pedir ¿cuál?' (solo en opción ÚNICA: radio/dropdown; en multi-selección/checkbox no hay operador 'contiene', usa un campo opcional aparte).",
+"- routing_model OBLIGATORIO cuando hay saltos: si cualquier navigate va DENTRO de un If (gate), incluye al nivel superior \"routing_model\":{\"PANTALLA\":[\"destinos\"]} con TODAS las transiciones (ambas ramas del gate); si no, Meta rechaza el salto en runtime ('doesn't satisfy provided routing_model'). Las pantallas terminales (complete) se omiten. En flows lineales sin If, Meta lo infiere solo (opcional).",
 "- Estilo recomendado: si la pregunta no cabe en el label (radio/checkbox 30, texto/dropdown 20), ponla como un TextSubheading ARRIBA del input y deja un label corto — el usuario prefiere ver la pregunta afuera del campo.",
 "- Una pantalla de solo lectura SIN Footer (destino 'Read more' de un OptIn, o 'Más información') debe ir AL FINAL del array de screens, o el Flow da error.",
 "- El 'title' (barra superior) admite acentos y emojis; el 'id' interno NO (solo letras y guion bajo).",

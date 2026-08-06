@@ -50,6 +50,35 @@ En la spec compacta del builder esto se escribe como `visible_when:{field:"<key>
 (o `isNot`) en cualquier bloque, y `gate:{when,goto,otherwise}` en un radio/dropdown;
 una pantalla destino de un "No" se marca `end:true` (finaliza el flujo).
 
+## 🔴 Con saltos (If) DEBES incluir `routing_model` (si no, error en runtime)
+
+Descubierto en producción: al probar un flow con gate, WhatsApp mostró
+> *"Can't perform a transition from [CONTACTO] to [PARTICIPAR], because it doesn't
+> satisfy provided routing_model."*
+
+Meta infiere solo las transiciones de los flows **lineales** (por eso los Flow1–19
+—sin `If`— no llevan `routing_model`). Pero **cuando un `navigate` vive dentro de un
+`If` (gate), Meta NO lo infiere** y rechaza el salto en runtime. Hay que declarar el
+`routing_model` al nivel superior del Flow JSON:
+
+```json
+{
+  "version": "7.3",
+  "routing_model": {
+    "QUESTION_ONE": ["EXPERIENCIA_PLAN"],
+    "EXPERIENCIA_PLAN": ["CONTACTO"],
+    "CONTACTO": ["PARTICIPAR", "GRACIAS"]
+  },
+  "screens": [ ... ]
+}
+```
+
+Reglas: es un objeto `{"PANTALLA": ["destinos..."]}` con **todas** las transiciones
+`navigate` (incluidas las de ambas ramas de un gate). Las pantallas terminales
+(`complete`) se omiten (no tienen salida). `build_flow.py` y el Studio lo generan
+**siempre** a partir de los `navigate` reales; el validador da **ERROR** si un salto
+dentro de un `If` no está declarado.
+
 ## 🔴 El label del Footer NO acepta emojis
 
 El botón inferior no renderiza emojis (el usuario lo confirmó: *"Continuar aquí no
