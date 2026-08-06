@@ -20,6 +20,36 @@ salida al que se entra con "Read more" y se sale con el botón atrás. Si dejas
 pantallas normales **después** de ella, el enrutamiento automático de Meta falla.
 El builder compacto la coloca al final por ti (sección `terms_screens`).
 
+## 🔴 Renderizado condicional (If): un campo OCULTO no puede ser obligatorio
+
+`If`/`Switch` **sí funcionan en flows estáticos** (navigate, sin servidor) desde
+**Flow JSON 4.0** — confirmado en la doc oficial de Meta (Components Reference):
+*"both components function without a data_exchange endpoint... client-side
+conditional rendering based on form values"*. Operadores: `== != && || ! > >= < <=`
+y paréntesis; la condición lee `${form.NOMBRE}`; máx **3 niveles** de anidación; un
+`If` dentro de otro `If` debe existir en **ambas ramas**; y si hay Footer dentro de
+un `If`, **no puede haber Footer fuera**.
+
+**REGLA CRÍTICA (rompe la importación):** un componente que se muestra
+condicionalmente —envuelto en un `If`— **NO puede ser `required: true`**. Meta:
+*"validation will fail if a component is effectively hidden but marked as required.
+Keep required omitted or false while it is hidden."* → deja esos campos
+`required: false`. El generador del Studio lo fuerza y el validador lo marca ERROR.
+
+Usos típicos (todos verificados con validador + simulación):
+- **Gate / salto:** `If {condition:"${form.X} == 'ID'", then:[Footer→A], else:[Footer→B]}`.
+  Para "si responde **No**, termina la encuesta": `goto` a una pantalla de gracias
+  **terminal** (Footer `complete`), y `otherwise`/rama else a la pantalla normal.
+- **Mostrar según respuesta:** `If {condition, then:[sub, radio, ...]}` (sin footer)
+  para ocultar preguntas irrelevantes (p. ej. "medio preferido" solo si dijo Sí).
+- **"Otro → ¿cuál?":** solo en **opción única** (radio/dropdown): `If {"${form.X}=='4_Otro'",
+  then:[TextInput required:false]}`. En **checkbox/chips (arreglo) NO se puede**
+  (no hay operador "contiene"): usa un campo opcional aparte, siempre visible.
+
+En la spec compacta del builder esto se escribe como `visible_when:{field:"<key>", is:"<título opción>"}`
+(o `isNot`) en cualquier bloque, y `gate:{when,goto,otherwise}` en un radio/dropdown;
+una pantalla destino de un "No" se marca `end:true` (finaliza el flujo).
+
 ## 🔴 El label del Footer NO acepta emojis
 
 El botón inferior no renderiza emojis (el usuario lo confirmó: *"Continuar aquí no

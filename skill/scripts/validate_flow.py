@@ -250,12 +250,20 @@ def validate(flow):
         footer_slots = _count_footer_slots(top_children)
         if footer_slots > 1:
             r.err(where, f"{footer_slots} Footers efectivos (máx 1 por pantalla)")
-        # un Footer dentro de un If debe existir en AMBAS ramas
-        for cif in _iter_ifs(top_children):
-            then_has = any(x.get("type") == "Footer" for x in (cif.get("then") or []))
-            else_has = any(x.get("type") == "Footer" for x in (cif.get("else") or []))
+        # un Footer dentro de un If debe existir en AMBAS ramas (recorre If dentro del Form)
+        all_ifs = [c for c in comps if isinstance(c, dict) and c.get("type") == "If"]
+        for cif in all_ifs:
+            then_has = any(isinstance(x, dict) and x.get("type") == "Footer" for x in (cif.get("then") or []))
+            else_has = any(isinstance(x, dict) and x.get("type") == "Footer" for x in (cif.get("else") or []))
             if then_has != else_has:
                 r.err(where, "Footer dentro de un If debe existir en AMBAS ramas (then y else)")
+            # Meta: un componente OCULTO (dentro de If) NO puede ser required:true -> la validación falla
+            for branch in ("then", "else"):
+                for x in (cif.get(branch) or []):
+                    if isinstance(x, dict) and x.get("type") in INPUT_TYPES and x.get("required") is True:
+                        r.err(where, f'"{x.get("name", "?")}" está dentro de un If (se muestra condicionalmente) '
+                                     "y es required:true; Meta rechaza un campo oculto obligatorio "
+                                     "(déjalo required:false).")
 
         for t, mx in MAX_PER_SCREEN.items():
             if t == "Footer":
