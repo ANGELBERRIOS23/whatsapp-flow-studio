@@ -398,6 +398,10 @@
           <button data-v="light" class="active"><span data-i="sun"></span>Claro</button>
           <button data-v="dark"><span data-i="moon"></span>Oscuro</button>
         </div>
+        <div class="seg plain" id="vwmode" title="Realista respeta los saltos/condiciones (como WhatsApp); Ver todo muestra el formulario completo">
+          <button data-v="real" class="active">👁 Realista</button>
+          <button data-v="all">Ver todo</button>
+        </div>
         <select class="selpill" id="screenSel" title="Ir a pantalla"></select>
         <button class="mini" id="resetBtn"><span data-i="reset"></span>Reiniciar</button>
       </div>
@@ -735,7 +739,7 @@ function cleanKey(n){return (n||"").replace(/_[a-f0-9]{6}$/,"");}
 /* ============================================================
    ESTADO + preview
    ============================================================ */
-var state={flow:null,spec:null,screenId:null,platform:"android",theme:"light",form:{},data:{},history:[],optLookup:{},qas:true,tab:"build",bScreen:0};
+var state={flow:null,spec:null,screenId:null,platform:"android",theme:"light",form:{},data:{},history:[],optLookup:{},qas:true,tab:"build",bScreen:0,showAll:false};
 var SOFT_MAX=8, HARD_MAX=50; // elementos por pantalla (recomendado / máximo Meta)
 
 function setFlow(flow,opts){
@@ -780,7 +784,17 @@ function safeCond(expr){
   var r=or();if(p!==t.length)throw 0;return !!r;
 }
 function evalCond(expr){try{var e=expr.replace(/\$\{(form|data)\.([^}]+)\}/g,function(_,k,n){var val=k==="form"?state.form[n]:state.data[n];if(Array.isArray(val))return JSON.stringify(val);return JSON.stringify(val==null?"":String(val));});return safeCond(e);}catch(e){return false;}}
-function activeParts(scr){var out={content:[],footer:null};function walk(list){(list||[]).forEach(function(c){if(!c||typeof c!=="object")return;if(c.type==="Footer"){out.footer=c;return;}if(c.type==="If"){walk(evalCond(c.condition)?c.then:(c["else"]||[]));return;}if(c.type==="Switch"){var v=resolveRef(c.value),cs=c.cases||{};walk(cs[v]!=null?cs[v]:(cs["default"]||[]));return;}out.content.push(c);});}walk(formChildren(scr));return out;}
+function activeParts(scr){var showAll=state.showAll,out={content:[],footer:null};function walk(list){(list||[]).forEach(function(c){if(!c||typeof c!=="object")return;if(c.type==="Footer"){out.footer=c;return;}
+  if(c.type==="If"){
+    if(showAll){
+      var hasF=(c.then||[]).concat(c["else"]||[]).some(function(x){return x&&x.type==="Footer";});
+      if(hasF){walk((c["else"]&&c["else"].length)?c["else"]:c.then);} // gate: rama por defecto (un solo botón)
+      else{walk(c.then);walk(c["else"]||[]);} // visibilidad: muestra todo el contenido condicional
+    } else {walk(evalCond(c.condition)?c.then:(c["else"]||[]));}
+    return;
+  }
+  if(c.type==="Switch"){var v=resolveRef(c.value),cs=c.cases||{};if(showAll){Object.keys(cs).forEach(function(k){if(k!=="default")walk(cs[k]);});}else{walk(cs[v]!=null?cs[v]:(cs["default"]||[]));}return;}
+  out.content.push(c);});}walk(formChildren(scr));return out;}
 function isFilled(c){var v=state.form[c.name];if(c.type==="CheckboxGroup"||c.type==="ChipsSelector"){var mn=c["min-selected-items"]||1;return Array.isArray(v)&&v.length>=mn;}if(c.type==="OptIn")return v===true;if(c.type==="CalendarPicker"&&c.mode==="range")return !!(v&&v["start-date"]&&v["end-date"]);return v!=null&&v!=="";}
 var _reCache={};
 function validField(c){if(c.type!=="TextInput")return true;var v=state.form[c.name];if(v==null||v==="")return true;
@@ -1198,6 +1212,7 @@ function switchTab(t){state.tab=t;$$(".tab").forEach(function(x){x.classList.tog
 $$(".tab").forEach(function(x){x.onclick=function(){switchTab(x.dataset.tab);};});
 $("#platform").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;state.platform=b.dataset.v;seg("#platform",b);renderPreview();});
 $("#theme").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;state.theme=b.dataset.v;seg("#theme",b);renderPreview();});
+$("#vwmode").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;state.showAll=(b.dataset.v==="all");seg("#vwmode",b);renderPreview();});
 function seg(id,btn){$$(id+" button").forEach(function(x){x.classList.remove("active");});btn.classList.add("active");}
 $("#screenSel").addEventListener("change",function(){state.screenId=this.value;renderPreview();$("#wBody").scrollTop=0;});
 $("#resetBtn").onclick=resetSim;$("#closeIc").onclick=back;
