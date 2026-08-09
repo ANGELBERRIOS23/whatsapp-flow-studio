@@ -97,8 +97,12 @@ class FlowStudioRegressionTests(unittest.TestCase):
             '.sc-head .acts{display:flex',
             '.screen-settings .f.full{grid-column:auto}',
             'var collapsedBlocks=new WeakSet()',
+            'data-v="real" class="active"><span data-i="eye"></span>Realista',
+            'M17.472 14.382c-.297-.149',
+            '--shadow:none',
         ):
             self.assertIn(marker, html)
+        self.assertNotIn('👁 Realista', html)
         self.assertIn(
             "var LIM={heading:80,subheading:80,body:4096,caption:4096,footer:35,optin:120,helper:80,title:30}",
             html,
