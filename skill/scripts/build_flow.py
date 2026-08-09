@@ -181,9 +181,12 @@ def norm_options(opts):
             item = {"id": f"{i}_{sanitize(o)}", "title": o}
         elif isinstance(o, dict):
             title = o.get("title", f"Opción {i}")
-            item = {"id": o.get("id") or f"{i}_{sanitize(title)}", "title": title}
-            if o.get("description"):
-                item["description"] = o["description"]
+            # Conserva campos admitidos por Meta que la spec no edita de forma
+            # explícita (description, metadata, image, alt-text, acciones, etc.).
+            # Solo completa id/title; no reduce el objeto a un subconjunto.
+            item = dict(o)
+            item["id"] = o.get("id") or f"{i}_{sanitize(title)}"
+            item["title"] = title
         else:
             continue
         base_id, n = item["id"], 1

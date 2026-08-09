@@ -12,14 +12,15 @@ Diseña formularios nativos de WhatsApp sin pelear con el constructor de Meta (q
 
 ## ✨ Qué hace
 
-- **🎨 Interfaz moderna** — **modo claro / oscuro** de toda la app (recuerda tu preferencia y respeta la del sistema) y **plantillas de arranque** (registro de contactos, encuesta, cita/reserva) para empezar en segundos.
+- **🎨 Interfaz moderna y adaptable** — **modo claro / oscuro** de toda la app, diseño móvil con cambio rápido **Editor / Vista previa**, navegación por teclado y **plantillas de arranque** (registro, encuesta, cita/reserva) para empezar en segundos.
 
 - **🧩 Constructor visual con muros de seguridad** — agrega pantallas y elementos (título, párrafo, respuesta corta, correo, teléfono, fecha, **calendario / rango**, opción única/múltiple, **chips**, lista desplegable, casilla, imagen, separador), con **valores por defecto** y **validación por patrón (regex)**. **Reordena arrastrando** (drag & drop) y edita **una pantalla a la vez** (navegador de pantallas). Cada campo tiene **límite de caracteres real de Meta** (contador `10/20` y tope de escritura) y cada pantalla su **contador de elementos** — no te deja crear algo que Meta rechazaría. Los **nombres de campos y de pantallas se autogeneran** sin errores (nunca ids inválidos). Los **saltos de lógica** se arman con menús: *“si responde [opción] → ir a [pantalla]”*. Genera el Flow JSON válido automáticamente.
-- **✏️ Edita flows ya creados (sin romper tu integración)** — carga un flow del *Flow Manager* de Meta y **edita o agrega** lo que necesites: los **nombres y claves de datos internos se conservan** (p. ej. `screen_0_Nombre_completo_0`), así tu **webhook / n8n sigue recibiendo los mismos campos**. Al cargar, el flow queda intacto hasta que lo edites. (Los flows con *saltos de lógica* se editan mejor en la pestaña **Editor JSON** o con el **Asistente IA** para no perder la lógica.)
+- **✏️ Edita flows ya creados (sin romper tu integración)** — conserva **nombres, claves, datos, IDs de opciones, descripciones, metadata, acciones y propiedades adicionales** de los componentes compatibles. Si detecta lógica o componentes que el constructor no puede representar sin pérdida, bloquea la regeneración visual y te lleva al **Editor JSON**.
 - **🤖 Asistente IA integrado** — conecta **Gemini, Claude, OpenAI, Kimi o un endpoint custom** (OpenAI-compat) con tu propia API key (guardada solo en tu navegador) y pídele cambios en lenguaje natural (“agrega una pantalla de contacto con nombre y correo”). El asistente **conoce las reglas de WhatsApp Flows** y el resultado se **valida antes de aplicarse**: si algo rompería el flow, no se aplica y puede pedir corrección.
-- **↩️ Deshacer/Rehacer** (Ctrl+Z / Ctrl+Shift+Z), **duplicar** pantallas y elementos (con ids internos frescos, sin colisiones), **cargar imágenes** por archivo o *drag & drop* (se reescalan solas), y **exportar el "Mapa de datos"** — la lista de cada campo con la **clave exacta que recibe tu webhook / n8n** (copiar o CSV).
+- **↩️ Deshacer/Rehacer** (Ctrl+Z / Ctrl+Shift+Z), **duplicar** pantallas y elementos (con ids internos frescos, sin colisiones), **contraer componentes** para trabajar con menos ruido, buscar componentes al agregarlos, insertar en una posición concreta, **cargar imágenes** por archivo o *drag & drop*, y exportar el **Mapa de datos**.
+- **💾 Borrador local automático** — recupera el último Flow al volver a abrir la app. Se guarda únicamente en el navegador y puedes iniciar limpio con `?fresh=1`.
 - **📝 Editor JSON en vivo** — pega o edita el JSON y la vista previa se actualiza al instante. Formatea, copia y valida.
-- **📱 Vista previa fiel** — se ve como WhatsApp real: **Android / iOS**, **claro / oscuro**, header, campos, radios, casillas, hojas de selección y botón inferior.
+- **📱 Vista previa más completa** — Android/iOS y claro/oscuro, incluyendo estados visibles/habilitados, captions del Footer, descripciones y acciones de opciones, `EmbeddedLink`, `NavigationList`, `PhotoPicker`, `DocumentPicker`, `ImageCarousel`, `update_data` y `open_url`.
 - **▶️ Simula llenado y envío** — llena el formulario, navega entre pantallas (los `If`/saltos se evalúan en vivo) y al enviar muestra **el payload exacto que recibiría tu webhook / n8n**.
 - **✅ Validación en vivo** — detecta lo que rompe la importación en Meta: `id` de pantalla inválidos (solo letras/`_`), footer faltante en terminal, emojis en el botón, referencias rotas, límites de caracteres, etc.
 
@@ -42,7 +43,7 @@ Dentro de la app:
 - **Descargar JSON** — baja el `flow.json` listo para pegar en el **Administrador de WhatsApp → Flows → Editar JSON**.
 
 Parámetros de URL para abrir en un estado concreto:
-`index.html?platform=ios&theme=dark`
+`index.html?platform=ios&theme=dark` · agrega `&fresh=1` para ignorar el borrador local.
 
 ## 📂 Contenido
 
@@ -65,6 +66,7 @@ skill/                            Skill de Claude Code: build_flow.py, validate_
 - Un único `index.html`: HTML + CSS + JS vanilla. Sin build, sin npm, sin CDN.
 - El generador `spec → Flow JSON` maneja lo tedioso y propenso a errores: nombres únicos, claves de payload, reenvío acumulado de datos entre pantallas, declaraciones `data`, saltos de lógica (`If` con footer en ambas ramas) e `id` de pantalla válidos.
 - Flow JSON objetivo: **v7.3**. Genera flows **estáticos** (`navigate` + `complete`); para flows con *endpoint* (`data_exchange`, ideal para disponibilidad tipo booking) necesitas además un servidor con cifrado — fuera del alcance de esta herramienta.
+- Los límites del validador son los que mantiene y ha verificado este proyecto. PyWa se usa como referencia de componentes y ejemplos, **no para reemplazar automáticamente esos límites**.
 - **Seguridad:** sin `eval` ni `new Function`. Las condiciones de los saltos de lógica se evalúan con un mini-parser propio (solo literales y los operadores `== != < > <= >= && || !`), así **cargar un flow de terceros no puede ejecutar código** en tu navegador. Las imágenes se restringen a `data:image/`. La app **no hace ninguna petición de red** salvo, si tú lo activas, al proveedor de IA que configures.
 
 ## 🧩 Skill de Claude Code incluida (carpeta `skill/`)
@@ -78,6 +80,8 @@ Este repo incluye la **skill de [Claude Code](https://claude.com/claude-code)** 
 **Instalar la skill:** copia la carpeta a `~/.claude/skills/whatsapp-flow/` y en Claude Code escribe `/whatsapp-flow`.
 
 > 🧠 **El Asistente IA del navegador no construye a ciegas ni rehace todo:** su *system prompt* lleva estas mismas reglas, edita **solo lo que pides** (edición quirúrgica) y su salida **pasa por el validador** antes de aplicarse.
+
+Las pruebas de regresión están en `tests/`. Ejecuta `python3 -m unittest discover -s tests -v` y `node tests/check_html_js.mjs` antes de publicar cambios.
 
 ## 📄 Licencia
 

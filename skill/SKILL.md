@@ -1,23 +1,12 @@
 ---
 name: whatsapp-flow
-version: 1.0.0
 description: >-
-  Construye formularios nativos de WhatsApp (WhatsApp Flows) generando el Flow
-  JSON válido y sin errores, listo para importar en el Administrador de WhatsApp /
-  Meta Flow Builder. Úsala cuando el usuario diga "crear/armar/hacer un flow de
-  WhatsApp", "formulario de WhatsApp", "encuesta/registro/cita en WhatsApp",
-  "arma este cuestionario para WhatsApp", pida un flow "grande y completo", o pase
-  preguntas para convertirlas en un flow. Genera pantallas encadenadas, reenvío de
-  datos entre pantallas, pantallas de "términos" (read more de OptIn), imágenes en
-  base64, y valida límites de caracteres y estructura antes de entregar. Evita los
-  errores típicos del constructor visual de Meta (que además no deja editar lo ya
-  creado).
-license: MIT
-allowed-tools:
-  - Read
-  - Write
-  - Edit
-  - Bash
+  Construye, edita, previsualiza y valida WhatsApp Flow JSON listo para Meta Flow
+  Builder. Usar al crear formularios, encuestas, registros, citas o cuestionarios
+  de WhatsApp; convertir preguntas a un Flow; corregir un JSON rechazado por Meta;
+  editar un Flow existente sin cambiar sus names, data ni payloads; o generar un
+  visor HTML. Incluye un builder determinista, validador con los límites verificados
+  por este proyecto, referencias de componentes y WhatsApp Flow Studio.
 ---
 
 # WhatsApp Flow Builder
@@ -49,6 +38,21 @@ declaraciones `data`) — que es justo donde se cometen los errores a mano.
   campos que vienen de pantallas anteriores y volver a pasarlos en el payload.
   Esto es 100 % automático con el script — hazlo con el script, no a mano.
 
+## Fuente de verdad y compatibilidad
+
+- Usar `scripts/validate_flow.py` y `references/components.md` como fuente de
+  verdad para límites. Son límites verificados por este proyecto y por flows que
+  el usuario probó en Meta. **No sustituirlos automáticamente por valores de
+  PyWa** ni por recuerdos del modelo.
+- Usar PyWa como referencia de formas de componentes, acciones y ejemplos, no
+  como autoridad para cambiar los límites locales.
+- Al editar un Flow existente, hacer cambios quirúrgicos sobre su JSON. Conservar
+  `id`, `name`, `data`, `routing_model`, referencias `${form.*}`/`${data.*}` y
+  propiedades desconocidas que no formen parte del cambio solicitado.
+- No pasar un Flow existente por la spec compacta si tiene `If`, `Switch`,
+  `data_exchange`, componentes no soportados por el constructor o propiedades
+  avanzadas. Editarlo como JSON y validarlo después.
+
 ## ⭐ Patrón de estilo del usuario (IMPORTANTE)
 
 En WhatsApp, el input solo muestra un `label` pequeño (tipo placeholder) y **la
@@ -65,14 +69,15 @@ un `label` corto. **Mantén este patrón** salvo que el usuario diga lo contrari
    tipos de campo, opciones, cuáles son obligatorias, si hay imágenes, si quiere
    pantalla de términos y condiciones, y qué texto va en el botón final. Si el
    usuario ya dio todo, no preguntes de más.
-2. **Escribe la spec compacta** (JSON) siguiendo el formato de abajo. Guárdala en
-   el scratchpad o junto al proyecto.
+2. **Elegir la ruta:** para un Flow nuevo, escribir la spec compacta. Para uno
+   existente, editar el JSON original de forma quirúrgica y saltar al paso 4.
 3. **Genera el JSON** con el builder:
    ```bash
    python3 ~/.claude/skills/whatsapp-flow/scripts/build_flow.py spec.json -o flow.json
    ```
    El builder **valida automáticamente** al terminar.
-4. **Si hay ERRORES**, corrígelos y vuelve a generar. Si solo hay **advertencias**,
+4. **Validar siempre** con `validate_flow.py`. Si hay ERRORES, corregirlos y
+   volver a generar/validar. Si solo hay **advertencias**,
    revísalas: casi siempre son límites de caracteres (el Flow suele importar
    igual, pero conviene acortar).
 5. **Entrega** el contenido de `flow.json` al usuario + instrucciones de importación
@@ -93,6 +98,14 @@ de llenado/envío, validación en vivo). Incluye un port en JS del generador
 `spec→Flow JSON` (mismo comportamiento que `build_flow.py`: nombres, payloads,
 reenvío de datos, saltos `If`, ids válidos). Es la herramienta pensada para
 publicar en GitHub (abrir `index.html` o vía GitHub Pages).
+
+El Studio guarda un borrador local automáticamente, ofrece vista móvil
+Editor/Preview y búsqueda al agregar componentes. La preview representa también
+`EmbeddedLink`, `NavigationList`, `PhotoPicker`, `DocumentPicker` e
+`ImageCarousel`, además de simular acciones de selección, `update_data` y
+`open_url`. Al importar, conserva propiedades adicionales de los componentes
+compatibles. Si detecta lógica que el constructor no puede expresar sin pérdida,
+la bloquea y dirige al Editor JSON.
 
 `scripts/viewer.html` — visor **lite** (solo vista previa + simulación), por si
 quieres algo mínimo. Ambos renderizan cualquier Flow JSON **como se ve en
@@ -218,10 +231,10 @@ Y estas causan mal render aunque "importen" (el validador las marca **⚠**):
 11. Máx **3 imágenes** por pantalla, cada una idealmente < 300 KB (el builder las
     reescala si tienes Pillow instalado). Base64 sin el prefijo `data:image/...`.
 
-## Referencias (cárgalas cuando las necesites)
+## Referencias (cargarlas solo cuando sean necesarias)
 
 - `references/components.md` — tabla exhaustiva de **cada componente**, sus
-  propiedades y **todos los límites de caracteres** (Meta v7.3).
+  propiedades y **los límites mantenidos por este proyecto** (Flow JSON v7.3).
 - `references/patterns.md` — recetas: multi-pantalla con reenvío, opción "Otro"
   con campo de texto, escala 1–10, términos y condiciones, campos condicionales
   (If/Switch), selección de fecha/hora, flows con endpoint (data_exchange).
