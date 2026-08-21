@@ -58,6 +58,14 @@ la opción robusta es replantear la pregunta para que sea una sola comparación
 simple, o mostrar el campo con una condición más amplia y dejarlo **opcional**
 (`required:false`) en vez de intentar acotarlo con lógica compuesta.
 
+**💡 Truco que SÍ funcionó (probado en producción): convertir "A o B" en un `!=`
+simple.** Si el campo tiene pocas opciones, "es A o es B" suele equivaler a "NO
+es la única opción restante". Ejemplo real: en vez de
+`${form.medio} == 'Correo' || ${form.medio} == 'Ambos'` (rechazado por Meta),
+usa `${form.medio} != 'WhatsApp'` — mismo resultado lógico (solo hay 3 opciones),
+una sola comparación simple, mismo patrón `!=` que Meta ya acepta en el gate.
+Revisa si tu "A o B" se puede reformular así antes de rendirte a required:false.
+
 **`required: true` dentro de un `If` estático SÍ es seguro** — confirmado con el
 editor real de Meta (Guardar → 0 errores). Tiene sentido: en un flow estático la
 condición se evalúa al instante con datos que YA están en el form (una respuesta
