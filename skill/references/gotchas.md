@@ -20,7 +20,7 @@ salida al que se entra con "Read more" y se sale con el botón atrás. Si dejas
 pantallas normales **después** de ella, el enrutamiento automático de Meta falla.
 El builder compacto la coloca al final por ti (sección `terms_screens`).
 
-## 🔴 Renderizado condicional (If): un campo OCULTO no puede ser obligatorio
+## 🔴 Renderizado condicional (If): "required" NUNCA puede ser una expresión
 
 `If`/`Switch` **sí funcionan en flows estáticos** (navigate, sin servidor) desde
 **Flow JSON 4.0** — confirmado en la doc oficial de Meta (Components Reference):
@@ -30,21 +30,41 @@ y paréntesis; la condición lee `${form.NOMBRE}`; máx **3 niveles** de anidaci
 `If` dentro de otro `If` debe existir en **ambas ramas**; y si hay Footer dentro de
 un `If`, **no puede haber Footer fuera**.
 
-**REGLA CRÍTICA (rompe la importación):** un componente que se muestra
-condicionalmente —envuelto en un `If`— **NO puede ser `required: true`**. Meta:
-*"validation will fail if a component is effectively hidden but marked as required.
-Keep required omitted or false while it is hidden."* → deja esos campos
-`required: false`. El generador del Studio lo fuerza y el validador lo marca ERROR.
+**`required: true` dentro de un `If` estático SÍ es seguro** — confirmado con el
+editor real de Meta (Guardar → 0 errores). Tiene sentido: en un flow estático la
+condición se evalúa al instante con datos que YA están en el form (una respuesta
+anterior en la misma pantalla); nunca hay un "hueco" donde el campo esté oculto
+pero cuente como obligatorio. (La documentación general de Meta que advierte de
+esto —*"validation will fail if a component is effectively hidden but marked as
+required... keep required false while it is hidden"*— aplica al escenario de
+**datos que cargan de forma asíncrona vía `data_exchange`**, que esta skill no usa;
+no es una restricción de `If` en sí.)
 
-Usos típicos (todos verificados con validador + simulación):
+**REGLA CRÍTICA real (rompe la importación, verificado en el editor de Meta):**
+`required` **SOLO** acepta un boolean (`true`/`false`) o una referencia dinámica
+**simple** `${data.X}` / `${screen.data.X}`. **NUNCA una expresión con
+operadores** como `"${form.X} == 'id'"` o con `&&`/`||` — Meta la rechaza al
+Guardar:
+> *"Expected property 'required' to be of type 'boolean' but found 'string'."*
+> *"Property 'required' should be of type 'boolean' or have dynamic data format
+> of the form ${screen.data.your_value} or ${data.your_value}."*
+
+Si quieres "atar" lo obligatorio a la misma condición de visibilidad, **no** lo
+hagas con una expresión: usa directamente `required: true` (el campo solo existe
+cuando la condición del `If` es verdadera, así que ya está implícitamente atado).
+
+Usos típicos (todos verificados con validador + simulación + editor real de Meta):
 - **Gate / salto:** `If {condition:"${form.X} == 'ID'", then:[Footer→A], else:[Footer→B]}`.
   Para "si responde **No**, termina la encuesta": `goto` a una pantalla de gracias
   **terminal** (Footer `complete`), y `otherwise`/rama else a la pantalla normal.
 - **Mostrar según respuesta:** `If {condition, then:[sub, radio, ...]}` (sin footer)
-  para ocultar preguntas irrelevantes (p. ej. "medio preferido" solo si dijo Sí).
+  para ocultar preguntas irrelevantes (p. ej. "medio preferido" solo si dijo Sí) —
+  puede ser `required: true` si aplica.
 - **"Otro → ¿cuál?":** solo en **opción única** (radio/dropdown): `If {"${form.X}=='4_Otro'",
-  then:[TextInput required:false]}`. En **checkbox/chips (arreglo) NO se puede**
-  (no hay operador "contiene"): usa un campo opcional aparte, siempre visible.
+  then:[TextInput required:false]}` (aquí sí suele dejarse opcional, por elección
+  de diseño, no por restricción técnica). En **checkbox/chips (arreglo) NO se
+  puede** condicionar así (no hay operador "contiene"): usa un campo opcional
+  aparte, siempre visible.
 
 En la spec compacta del builder esto se escribe como `visible_when:{field:"<key>", is:"<título opción>"}`
 (o `isNot`) en cualquier bloque, y `gate:{when,goto,otherwise}` en un radio/dropdown;

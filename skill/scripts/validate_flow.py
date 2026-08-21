@@ -257,13 +257,32 @@ def validate(flow):
             else_has = any(isinstance(x, dict) and x.get("type") == "Footer" for x in (cif.get("else") or []))
             if then_has != else_has:
                 r.err(where, "Footer dentro de un If debe existir en AMBAS ramas (then y else)")
-            # Meta: un componente OCULTO (dentro de If) NO puede ser required:true -> la validación falla
+            # Un componente dentro de un If con required:true es seguro SOLO si la
+            # condición se evalúa al instante con datos ya presentes en el form (caso
+            # normal: mostrar/pedir según una respuesta anterior). El riesgo real de
+            # "oculto pero obligatorio" que documenta Meta es para datos que llegan
+            # de forma ASÍNCRONA (data_exchange) con un instante de carga donde el
+            # campo aún no es visible pero ya se evalúa como requerido. Confirmado con
+            # el editor real de Meta: required:true dentro de un If estático NO da
+            # error de validación (solo lo rechaza si required es un string/expresión
+            # con operadores — eso sí es inválido, ver chequeo de tipo más abajo).
             for branch in ("then", "else"):
                 for x in (cif.get(branch) or []):
                     if isinstance(x, dict) and x.get("type") in INPUT_TYPES and x.get("required") is True:
-                        r.err(where, f'"{x.get("name", "?")}" está dentro de un If (se muestra condicionalmente) '
-                                     "y es required:true; Meta rechaza un campo oculto obligatorio "
-                                     "(déjalo required:false).")
+                        r.warn(where, f'"{x.get("name", "?")}" está dentro de un If y es required:true. '
+                                      "Suele ser seguro si la condición depende de una respuesta YA dada "
+                                      "(no de datos que cargan async); revisa que sea ese el caso.")
+            # required como STRING con operadores (==, !=, &&, ||) SÍ es inválido:
+            # Meta solo acepta boolean o una referencia dinámica simple ${data.X} /
+            # ${screen.data.X}, nunca una expresión de comparación.
+            for branch in ("then", "else"):
+                for x in (cif.get(branch) or []):
+                    req = x.get("required") if isinstance(x, dict) else None
+                    if isinstance(req, str) and not re.match(r"^\$\{(screen\.)?data\.[^}]+\}$", req):
+                        r.err(where, f'"{x.get("name", "?")}" tiene required="{req}" (expresión con '
+                                     "operadores). Meta solo acepta required: true/false, o una referencia "
+                                     'dinámica simple ${data.X} / ${screen.data.X} — NO una comparación '
+                                     "(==, !=, &&, ||). Usa un boolean fijo.")
 
         for t, mx in MAX_PER_SCREEN.items():
             if t == "Footer":
