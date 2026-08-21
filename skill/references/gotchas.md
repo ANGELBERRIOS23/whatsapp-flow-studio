@@ -30,6 +30,34 @@ y paréntesis; la condición lee `${form.NOMBRE}`; máx **3 niveles** de anidaci
 `If` dentro de otro `If` debe existir en **ambas ramas**; y si hay Footer dentro de
 un `If`, **no puede haber Footer fuera**.
 
+**⚠ El editor real de Meta es MUCHO más estricto con `&&`/`||` de lo que dice su
+doc.** Intentando mostrar "correo" solo si medio es "Correo" o "Ambos", se probaron
+3 formas — las 3 pasaron nuestro validador/simulador propio y **las 3 fueron
+rechazadas por el editor real de Meta**, cada vez con un error distinto:
+
+1. `"(${form.seguir_contacto_e775fd} != '1_No') && (${form.medio} == 'A' || ${form.medio} == 'B')"`
+   → *"Type mismatch in an equality operation between '(...!= 1_No)' and 'A'"*
+   (no hacía falta el `&&` con la condición externa: si el `If` ya vive dentro del
+   `then` de otro `If`, esa condición padre YA está implícita — repetirla es
+   redundante y aquí rompió el parser).
+2. Simplificado a solo `"${form.medio} == 'A' || ${form.medio} == 'B'"`
+   → *"Wrong positioning of operator '||'. It cannot be used in concatenation
+   with '=='"* — Meta rechazó incluso un `||` plano entre dos `==`, pese a que su
+   propia documentación lo lista como operador soportado.
+3. Separado en dos `If` independientes con el mismo campo duplicado en cada
+   `then` (mutuamente excluyentes en tiempo de ejecución, nunca coexisten)
+   → *"Duplicate name found for Form components"* — **Meta valida nombres
+   duplicados de forma ESTÁTICA, sin analizar que las ramas son excluyentes.**
+   Ni siquiera lo permite entre dos `If` distintos con condiciones que jamás se
+   cumplen a la vez.
+
+**Conclusión práctica: evita `&&`/`||` en `condition` salvo que sea imprescindible,
+y NUNCA repitas el mismo `name` en dos sitios del mismo Form** (aunque estén en
+ramas que a ti te consten excluyentes). Si necesitas "muéstrame X según A O B",
+la opción robusta es replantear la pregunta para que sea una sola comparación
+simple, o mostrar el campo con una condición más amplia y dejarlo **opcional**
+(`required:false`) en vez de intentar acotarlo con lógica compuesta.
+
 **`required: true` dentro de un `If` estático SÍ es seguro** — confirmado con el
 editor real de Meta (Guardar → 0 errores). Tiene sentido: en un flow estático la
 condición se evalúa al instante con datos que YA están en el form (una respuesta

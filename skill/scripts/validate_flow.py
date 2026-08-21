@@ -401,6 +401,18 @@ def validate(flow):
                     # marca de complete se cuenta abajo con el footer
                     pass
 
+        # nombres duplicados en la misma pantalla: Meta lo valida de forma ESTÁTICA
+        # (rompe la importación) aunque los dos estén en ramas de If que nunca
+        # coexisten en tiempo de ejecución — "Duplicate name found for Form
+        # components". Si necesitas el mismo campo en 2 sitios, dale nombres
+        # distintos o replantea la lógica (ver gotchas.md).
+        seen_names = set()
+        for nm in input_names:
+            if nm in seen_names:
+                r.err(where, f'nombre de componente duplicado: "{nm}" (Meta lo rechaza '
+                             "aunque estén en ramas de un If que nunca coexisten)")
+            seen_names.add(nm)
+
         # Footer / terminal
         for foot in footers:
             lbl = foot.get("label", "")
