@@ -83,6 +83,20 @@ Este repo incluye la **skill de [Claude Code](https://claude.com/claude-code)** 
 
 Las pruebas de regresión están en `tests/`. Ejecuta `python3 -m unittest discover -s tests -v` y `node tests/check_html_js.mjs` antes de publicar cambios.
 
+## 🔗 Add-on: enviar el Flow fuera de la ventana de 24h (`/whatsapp-plantillas`)
+
+Esta skill construye el **Flow** (el formulario). Para **entregarlo** después de
+que la ventana de 24h cerró (o para iniciar la conversación), Meta exige un
+**message template con botón de Flow** — y ahí el *texto* de ese template pesa
+tanto como el JSON: si Meta lo clasifica MARKETING en vez de UTILITY, cuesta
+~14–16× más por envío; y si usa palabras como "código"/"OTP"/"verificación"
+puede caer en AUTHENTICATION (que ni acepta botones de Flow).
+
+Para redactar ese texto (no para enviarlo — es aparte) existe la skill
+complementaria **`whatsapp-plantillas`** — misma familia, distinto problema:
+qué categoría asigna Meta según las palabras usadas, cómo mantenerlo en
+UTILITY, y cómo no quemar el nombre de la plantilla si Meta la recategoriza.
+
 ## 📄 Licencia
 
 MIT — úsalo, modifícalo y compártelo libremente.
