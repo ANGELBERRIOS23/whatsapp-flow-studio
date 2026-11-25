@@ -221,7 +221,10 @@ def _describe_input_raw(si, input_idx, blk):
             return {"kind": "textinput", "input_type": ("text" if k == "text" else k),
                     "question": q, "label": blk.get("label", q), "token": t,
                     "name": f"{t}_{short_hash(si, input_idx, q)}",
-                    "pkey": f"screen_{si}_{t}_{input_idx}", "dtype": "string", "blk": blk}
+                    # input-type=number deja un NÚMERO en ${form.x}: declararlo "string" en la pantalla
+                    # siguiente hace que Meta rechace el Flow ("expecting 'string' but got 'number'").
+                    "pkey": f"screen_{si}_{t}_{input_idx}",
+                    "dtype": "number" if k == "number" else "string", "blk": blk}
     if "textarea" in blk:
         q = blk["textarea"]; t = tok(q)
         return {"kind": "textarea", "question": q, "label": blk.get("label", q), "token": t,
@@ -252,8 +255,27 @@ def _describe_input_raw(si, input_idx, blk):
         q = blk["optin"]; t = tok(q)
         return {"kind": "optin", "question": q, "label": q, "token": t,
                 "name": f"{t}_{short_hash(si, input_idx, q)}",
-                "pkey": f"screen_{si}_{t}_{input_idx}", "dtype": "string", "blk": blk}
+                "pkey": f"screen_{si}_{t}_{input_idx}", "dtype": "boolean", "blk": blk}  # OptIn = true/false
     return None
+
+
+def declaracion_de(dt):
+    """Declaración en "data" de un campo que viene de otra pantalla. El "type" tiene que ser el del valor
+    del input (${form.x}); si no coincide, Meta rechaza el Flow al guardarlo."""
+    if dt == "array":
+        return {"__example__": [], "items": {"type": "string"}, "type": "array"}
+    if dt == "object":
+        return {"__example__": {"start-date": "2024-01-01", "end-date": "2024-01-05"}, "type": "object"}
+    if dt == "number":
+        return {"__example__": 0, "type": "number"}
+    if dt == "boolean":
+        return {"__example__": False, "type": "boolean"}
+    return {"__example__": "Example", "type": "string"}
+
+
+def vacio_de(dt):
+    """Valor de un campo todavía no recogido en el payload de un salto, con el tipo correcto."""
+    return {"array": [], "object": {}, "number": 0, "boolean": False}.get(dt, "")
 
 
 def plan_all_fields(in_screens):
@@ -411,7 +433,7 @@ def build(spec):
             elif pk in carr:
                 payload[pk] = f"${{data.{pk}}}"
             else:
-                payload[pk] = [] if dt == "array" else ({} if dt == "object" else "")
+                payload[pk] = vacio_de(dt)
         return payload
 
     for si, s in enumerate(in_screens):
@@ -500,14 +522,7 @@ def build(spec):
                           "payload": normal_payload}
             children.append({"type": "Footer", "label": footer_label, "on-click-action": action})
 
-        data_decl = {}
-        for pk, dt in carried:
-            if dt == "array":
-                data_decl[pk] = {"__example__": [], "items": {"type": "string"}, "type": "array"}
-            elif dt == "object":
-                data_decl[pk] = {"__example__": {"start-date": "2024-01-01", "end-date": "2024-01-05"}, "type": "object"}
-            else:
-                data_decl[pk] = {"__example__": "Example", "type": "string"}
+        data_decl = {pk: declaracion_de(dt) for pk, dt in carried}
 
         screen_obj = {
             "id": s["id"], "title": s.get("title", ""), "data": data_decl,

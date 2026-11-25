@@ -75,6 +75,7 @@ Este repo incluye la **skill de [Claude Code](https://claude.com/claude-code)** 
 
 - `skill/scripts/build_flow.py` — genera Flow JSON válido desde una spec compacta (nombres únicos, claves de payload, reenvío de datos entre pantallas, saltos de lógica e `id` válidos).
 - `skill/scripts/validate_flow.py` — valida **cualquier** Flow JSON (estructura + límites de Meta) antes de importarlo. Probado contra decenas de flows reales sin falsos errores.
+  También revisa que cada dato que pasa de una pantalla a otra tenga el **tipo** con que se declara en `data` (Meta rechaza un DPI numérico declarado como texto: *"expecting 'string' but got 'number'"*). Con `--arreglar` corrige esas declaraciones: `python3 skill/scripts/validate_flow.py flow.json --arreglar`.
 - `skill/SKILL.md` + `skill/references/` — toda la documentación de reglas, componentes, límites de caracteres y errores comunes de WhatsApp Flows.
 
 **Instalar la skill:** copia la carpeta a `~/.claude/skills/whatsapp-flow/` y en Claude Code escribe `/whatsapp-flow`.

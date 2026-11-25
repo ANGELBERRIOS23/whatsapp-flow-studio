@@ -5,6 +5,7 @@ validate_flow.py — Validador de WhatsApp Flow JSON.
 Uso:
     python3 validate_flow.py flow.json
     python3 validate_flow.py flow.json --strict   # warnings cuentan como fallo
+    python3 validate_flow.py flow.json --arreglar [salida.json]   # corrige tipos de "data" y valida
 
 Filosofía de severidad (para NO dar falsas alarmas en flows que ya funcionan):
   ERROR   = rompe la importación / ejecución del Flow en Meta. Hay que corregirlo.
@@ -122,6 +123,81 @@ def _walk_components(children):
         elif t == "Switch":
             for arr in (c.get("cases") or {}).values():
                 yield from _walk_components(arr)
+
+
+# Tipo del valor que deja cada input en ${form.NAME} (lo que Meta compara con "data" de la pantalla destino).
+_EJEMPLO = {"string": "Example", "number": 0, "boolean": False, "array": [],
+            "object": {"start-date": "2024-01-01", "end-date": "2024-01-05"}}
+
+
+def _tipo_de_input(c):
+    t = c.get("type")
+    if t == "TextInput":
+        return "number" if c.get("input-type") == "number" else "string"
+    if t in ("TextArea", "Dropdown", "RadioButtonsGroup", "DatePicker"):
+        return "string"
+    if t in ("CheckboxGroup", "ChipsSelector", "PhotoPicker", "DocumentPicker"):
+        return "array"
+    if t == "CalendarPicker":
+        return "object" if c.get("mode") == "range" else "string"
+    if t == "OptIn":
+        return "boolean"
+    return None
+
+
+def _tipos_de_inputs(screen):
+    layout = (screen.get("layout") or {}).get("children") if isinstance(screen.get("layout"), dict) else None
+    return {c["name"]: _tipo_de_input(c) for c in _walk_components(layout)
+            if isinstance(c, dict) and c.get("name") and _tipo_de_input(c)}
+
+
+def _tipo_literal(v):
+    if isinstance(v, bool):
+        return "boolean"
+    if isinstance(v, (int, float)):
+        return "number"
+    if isinstance(v, list):
+        return "array"
+    if isinstance(v, dict):
+        return "object"
+    if isinstance(v, str):
+        return "string"
+    return None
+
+
+_REF_SOLA = re.compile(r"^\$\{(form|data)\.([A-Za-z0-9_]+)\}$")
+_REF_OTRA_PANTALLA = re.compile(r"^\$\{screen\.([A-Za-z0-9_]+)\.(form|data)\.([A-Za-z0-9_]+)\}$")
+
+
+def _tipo_valor(v, tipos_form, tipos_data, screen_by_id):
+    """Tipo de un valor de payload: referencia sola (${form.x} / ${data.x} / ${screen.ID.form.x}) o literal.
+    Un texto que mezcla referencias con más texto es string. None si no se puede saber."""
+    if isinstance(v, str):
+        m = _REF_SOLA.match(v)
+        if m:
+            return (tipos_form if m.group(1) == "form" else tipos_data).get(m.group(2))
+        m = _REF_OTRA_PANTALLA.match(v)
+        if m:
+            otra = screen_by_id.get(m.group(1)) or {}
+            if m.group(2) == "form":
+                return _tipos_de_inputs(otra).get(m.group(3))
+            return ((otra.get("data") or {}).get(m.group(3)) or {}).get("type")
+    return _tipo_literal(v)
+
+
+def _acciones(nodo, donde):
+    """(ubicación, acción) de cada on-click-action / on-select-action, incluso dentro de If/Switch y en
+    las opciones de un data-source."""
+    if isinstance(nodo, dict):
+        for akey in ("on-click-action", "on-select-action", "on-unselect-action"):
+            if isinstance(nodo.get(akey), dict):
+                yield f'{donde} > {nodo.get("type") or "opción"}.{akey}', nodo[akey]
+        for k, v in nodo.items():
+            if k not in ("on-click-action", "on-select-action", "on-unselect-action"):
+                yield from _acciones(v, donde)
+    elif isinstance(nodo, list):
+        for x in nodo:
+            yield from _acciones(x, donde)
 
 
 def _iter_ifs(children):
@@ -461,6 +537,11 @@ def validate(flow):
         for k, v in (s.get("data") or {}).items():
             if not isinstance(v, dict) or "__example__" not in v or "type" not in v:
                 r.err(where, f'data["{k}"] debe tener "__example__" y "type"')
+                continue
+            ej = _tipo_literal(v["__example__"])
+            if v["type"] in _EJEMPLO and ej and ej != v["type"]:
+                r.err(where, f'data["{k}"] es "type": "{v["type"]}" pero su "__example__" es {ej} '
+                             f'({v["__example__"]!r}); usa por ejemplo {json.dumps(_EJEMPLO[v["type"]], ensure_ascii=False)}.')
 
     # ── validaciones globales ──
     if not terminal_screens:
@@ -478,6 +559,33 @@ def validate(flow):
             continue
         if sid not in navigate_targets:
             r.warn(f'pantalla "{sid}"', "no es destino de ninguna acción navigate (inalcanzable)")
+
+    # tipos: cada valor que un navigate manda a otra pantalla debe tener el MISMO tipo con que esa pantalla
+    # lo declara en "data". Meta lo rechaza al guardar: «Schema of dynamic data '${form.DPI}' is not
+    # matching schema of data model field 'screen_1_DPI' on screen 'X'. Property is expecting 'string' but
+    # got 'number'». Pasa con TextInput input-type=number (valor número), OptIn (booleano), CheckboxGroup /
+    # ChipsSelector (arreglo) y CalendarPicker en rango (objeto) declarados como "string".
+    for s in screens:
+        if not isinstance(s, dict):
+            continue
+        tipos_form = _tipos_de_inputs(s)
+        tipos_data = {k: v.get("type") for k, v in (s.get("data") or {}).items() if isinstance(v, dict)}
+        for donde, act in _acciones(s.get("layout"), f'pantalla "{s.get("id")}"'):
+            if act.get("name") != "navigate":
+                continue
+            tgt = screen_by_id.get((act.get("next") or {}).get("name"))
+            if not tgt:
+                continue
+            declarado = {k: v.get("type") for k, v in (tgt.get("data") or {}).items() if isinstance(v, dict)}
+            for k, v in (act.get("payload") or {}).items():
+                esperado = declarado.get(k)
+                real = _tipo_valor(v, tipos_form, tipos_data, screen_by_id)
+                if esperado and real and real != esperado:
+                    r.err(f'{donde}.payload.{k}',
+                          f'manda {v!r} de tipo {real}, pero la pantalla "{tgt.get("id")}" declara '
+                          f'data["{k}"] como {esperado}. Meta lo rechaza: «Property is expecting '
+                          f"'{esperado}' but got '{real}'». Declara data[\"{k}\"] con "
+                          f'"type": "{real}" y "__example__": {json.dumps(_EJEMPLO[real], ensure_ascii=False)}.')
 
     # consistencia de payloads: cada navigate hacia una pantalla debe enviar TODOS
     # los campos que esa pantalla declara en su "data" (si no, ese campo llega vacío
@@ -564,11 +672,43 @@ def validate(flow):
     return r
 
 
+def arreglar_tipos(flow):
+    """Corrige en el sitio las declaraciones de "data" cuyo tipo no coincide con lo que les llega por
+    navigate (p. ej. un TextInput numérico declarado "string"). Repite hasta que no haya cambios, porque un
+    campo corregido en una pantalla se reenvía como ${data.x} a la siguiente. Devuelve [(pantalla, campo,
+    de, a)]."""
+    screens = [s for s in flow.get("screens", []) if isinstance(s, dict)]
+    por_id = {s.get("id"): s for s in screens}
+    cambios = []
+    for _ in range(len(screens) + 1):
+        hubo = False
+        for s in screens:
+            tipos_form = _tipos_de_inputs(s)
+            tipos_data = {k: v.get("type") for k, v in (s.get("data") or {}).items() if isinstance(v, dict)}
+            for _donde, act in _acciones(s.get("layout"), ""):
+                tgt = por_id.get((act.get("next") or {}).get("name")) if act.get("name") == "navigate" else None
+                if not tgt:
+                    continue
+                for k, v in (act.get("payload") or {}).items():
+                    dec = (tgt.get("data") or {}).get(k)
+                    real = _tipo_valor(v, tipos_form, tipos_data, por_id)
+                    if isinstance(dec, dict) and real and dec.get("type") != real:
+                        cambios.append((tgt.get("id"), k, dec.get("type"), real))
+                        nuevo = {"__example__": _EJEMPLO[real], "type": real}
+                        if real == "array":
+                            nuevo["items"] = {"type": "string"}
+                        tgt["data"][k] = nuevo
+                        hubo = True
+        if not hubo:
+            break
+    return cambios
+
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("-")]
     strict = "--strict" in sys.argv
     if not args:
-        print("uso: python3 validate_flow.py flow.json [--strict]")
+        print("uso: python3 validate_flow.py flow.json [--strict] [--arreglar salida.json]")
         sys.exit(2)
     path = args[0]
     try:
@@ -577,6 +717,15 @@ def main():
     except json.JSONDecodeError as e:
         print(f"❌ JSON inválido en {path}: {e}")
         sys.exit(1)
+
+    if "--arreglar" in sys.argv:
+        salida = args[1] if len(args) > 1 else path
+        cambios = arreglar_tipos(flow)
+        with open(salida, "w", encoding="utf-8") as f:
+            json.dump(flow, f, ensure_ascii=False, indent=2)
+        print(f"🔧 {len(cambios)} declaración(es) corregida(s) → {salida}")
+        for pantalla, campo, de, a in cambios:
+            print(f'   • {pantalla}: data["{campo}"] {de} → {a}')
 
     r = validate(flow)
     print(f"\n📋 Validación de {path}")

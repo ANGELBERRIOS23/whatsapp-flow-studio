@@ -206,6 +206,11 @@ Estas son las que rompen la importación (el validador las marca como **ERROR**)
 6. `id` únicos; **"SUCCESS" está reservado**, no lo uses.
 7. Un solo `Footer` por pantalla. Componentes de entrada dentro de un `Form`.
 
+7b. El `"type"` de cada campo en `data` debe ser el del valor que le llega: `number` para un TextInput
+   numérico, `boolean` para OptIn, `array` para Checkbox/Chips/Pickers, `object` para calendario en rango.
+   Si no, Meta rechaza: *"Property is expecting 'string' but got 'number'"*. El validador lo detecta y
+   `python3 scripts/validate_flow.py flow.json --arreglar` lo corrige (ver gotchas.md).
+
 Y estas causan mal render aunque "importen" (el validador las marca **⚠**):
 
 8. **El label del Footer NO renderiza emojis** — déjalo en texto ("Continuar",

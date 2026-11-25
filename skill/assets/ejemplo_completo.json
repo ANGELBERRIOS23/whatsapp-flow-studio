@@ -270,8 +270,8 @@
           "type": "string"
         },
         "screen_1_Cuntos_aos_tienes_0": {
-          "__example__": "Example",
-          "type": "string"
+          "__example__": 0,
+          "type": "number"
         },
         "screen_1_En_qu_ciudad_vives_1": {
           "__example__": "Example",
@@ -419,8 +419,8 @@
           "type": "string"
         },
         "screen_1_Cuntos_aos_tienes_0": {
-          "__example__": "Example",
-          "type": "string"
+          "__example__": 0,
+          "type": "number"
         },
         "screen_1_En_qu_ciudad_vives_1": {
           "__example__": "Example",

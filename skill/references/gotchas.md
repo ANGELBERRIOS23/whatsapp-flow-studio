@@ -20,6 +20,30 @@ salida al que se entra con "Read more" y se sale con el botón atrás. Si dejas
 pantallas normales **después** de ella, el enrutamiento automático de Meta falla.
 El builder compacto la coloca al final por ti (sección `terms_screens`).
 
+## 🔴 El "type" de data tiene que ser el del valor (error real de Meta, nov-2026)
+
+Al guardar el formulario de MAIPA (DPI con `input-type: number` en una pantalla y, en la siguiente,
+`data["screen_1_DPI"]` declarado `"type": "string"`), Meta respondió:
+
+> *Schema of dynamic data '${form.Escribe_tu_DPI_7c1847}' is not matching schema of data model field
+> 'screen_1_Escribe_tu_DPI_1' on screen 'UBICACION'. Property is expecting 'string' but got 'number'.*
+
+Cada valor que viaja por `navigate` se compara con la declaración de `data` de la pantalla destino:
+
+| Input | Valor de `${form.x}` | Declaración en `data` |
+|---|---|---|
+| TextInput `input-type: number` | número | `{"type": "number", "__example__": 0}` |
+| OptIn | booleano | `{"type": "boolean", "__example__": false}` |
+| CheckboxGroup, ChipsSelector, PhotoPicker, DocumentPicker | arreglo | `{"type": "array", "items": {"type": "string"}, "__example__": []}` |
+| CalendarPicker `mode: range` | objeto | `{"type": "object", "__example__": {"start-date": "…", "end-date": "…"}}` |
+| TextInput (otros), TextArea, Dropdown, Radio, DatePicker | texto | `{"type": "string", "__example__": "Example"}` |
+
+El `__example__` también tiene que ser de ese tipo, y en un salto (gate) los campos aún no recogidos van
+vacíos con su tipo: `0`, `false`, `[]`, `{}` o `""`. Hasta nov-2026 el builder (Python y Studio) declaraba
+todo como `string` y el validador no lo revisaba: el ejemplo de referencia tenía el mismo error.
+Ahora `validate_flow.py` lo marca como ERROR y `validate_flow.py flow.json --arreglar` corrige las
+declaraciones solo (también las que se reenvían como `${data.x}` a pantallas posteriores).
+
 ## 🔴 Renderizado condicional (If): "required" NUNCA puede ser una expresión
 
 `If`/`Switch` **sí funcionan en flows estáticos** (navigate, sin servidor) desde
